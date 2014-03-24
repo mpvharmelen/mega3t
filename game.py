@@ -3,7 +3,7 @@ from pygame.locals import *
 
 import board
 
-TILE_SIZE = 99
+TILE_SIZE = 55
 LINE_THICKNESS = 1
 MARGIN = 20
 BACKGROUND_COLOR = (255, 255, 255)
