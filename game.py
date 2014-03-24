@@ -6,6 +6,9 @@ import board
 WINDOW_SIZE = (800, 680)
 BOARD_SIZE = (640, 640)
 MARGIN = 20
+BACKGROUND_COLOR = (255, 255, 255)
+PROGRAM_NAME = 'Mega3T'
+FONT = 'courier new'
 
 def in_board(pos):
     if MARGIN < event.pos[0] < BOARD_SIZE[0]+MARGIN and MARGIN < event.pos[1] < BOARD_SIZE[1]+MARGIN:
@@ -14,15 +17,15 @@ def in_board(pos):
 
 pygame.init()
 window = pygame.display.set_mode(WINDOW_SIZE)
-window.fill((255, 255, 255))
-pygame.display.set_caption('Mega3T')
+window.fill(BACKGROUND_COLOR)
+pygame.display.set_caption(PROGRAM_NAME)
 
 # Render and blit title, and turn.
-bold = pygame.font.Font(pygame.font.match_font('courier new', bold=True), 21)
-title = bold.render('Mega3T', False, (0, 0, 0))
+bold = pygame.font.Font(pygame.font.match_font(FONT, bold=True), 21)
+title = bold.render(PROGRAM_NAME, False, (0, 0, 0))
 window.blit(title, (680, 20))
 
-font = pygame.font.Font(pygame.font.match_font('courier new'), 16)
+font = pygame.font.Font(pygame.font.match_font(FONT), 16)
 turn_text = font.render('', False, (0, 0, 0))
 def draw_turn(turn):
     """Override the turn text to show who's turn it is."""
