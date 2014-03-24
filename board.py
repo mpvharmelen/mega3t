@@ -141,6 +141,9 @@ class Board(object):
 
     def reset(self):
         self.tiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
+        self.allowed_moves = []
+        for x in range(self.n_rows**2):
+            self.allowed_moves.extend([(x, y) for y in range(n_rows**2)])
         self.turn = 0
 
 
@@ -235,8 +238,9 @@ class Board(object):
         self.draw_board()
 
         # But, don't highlight any tiles that have a value!
-        if self.tiles[coords[0]][coords[1]] is not None:
+        if coords not in self.allowed_moves:
             return
+
         highlight = pygame.Surface([self.inner_size]*2, pygame.SRCALPHA)
 
         # What's this?
