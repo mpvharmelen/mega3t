@@ -74,7 +74,7 @@ class Cross(Piece):
 
 
 class Board(object):
-    def __init__(self, pieces, pixl_size, pixl_margin, colors, font='courier new', nr_rows=3):
+    def __init__(self, pieces, size_px, margin_px, colors, font='courier new', n_rows=3):
         self.pieces = []
         for piece in pieces:
             if isinstance(piece, Piece):
@@ -84,19 +84,19 @@ class Board(object):
                                 '(a subclass of) Piece.')
         self.turn = 0
 
-        self.real_size, self.margin = pixl_size, pixl_margin
-        self.size, self.tile_size = pixl_size-pixl_margin, (pixl_size-pixl_margin)/nr_rows**2
+        self.real_size, self.margin = size_px, margin_px
+        self.size, self.tile_size = size_px-margin_px, (size_px-margin_px)/n_rows**2
         self.colors = colors
-        self.nr_rows = nr_rows
+        self.n_rows = n_rows
 
-        self.tiles = [[None]*nr_rows**2 for i in range(nr_rows**2)]
+        self.tiles = [[None]*n_rows**2 for i in range(n_rows**2)]
 
         self.outer_surface = pygame.Surface((self.real_size, self.real_size))
         self.outer_surface.fill(colors['background'])
 
         # Draw the row and column numbers.
         font = pygame.font.Font(pygame.font.match_font(font), 16)
-        for i in range(nr_rows**2):
+        for i in range(n_rows**2):
             f = font.render(str(i), False, self.colors['border'])
             rect = f.get_rect()
             rect.topleft = (
@@ -119,8 +119,8 @@ class Board(object):
     def draw_board(self):
         """Draw the board to the surface, with everything on it."""
         self.surface.fill(self.colors['background'])
-        for x in range(self.nr_rows**2):
-            for y in range(self.nr_rows**2):
+        for x in range(self.n_rows**2):
+            for y in range(self.n_rows**2):
                 # First draw the tile itself, which is just some borders.
                 pos = self.coords_to_pos((x, y))
                 if 'pos' in DEBUG:
