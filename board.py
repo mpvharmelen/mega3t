@@ -111,6 +111,8 @@ class Board(object):
         self.inner_size = n_rows**2 * self.tile_line_size
         self.outer_size = self.inner_size + margin * 2
 
+        self.highlights = []
+
         self.design = design
         self.reset()
 
@@ -136,6 +138,7 @@ class Board(object):
             self.outer_surface.blit(f, rect)
 
         self.surface = pygame.Surface([self.inner_size]*2)
+        self.highlight_surf = pygame.Surface([self.inner_size]*2, pygame.SRCALPHA)
         self.draw_board()
 
 
@@ -184,6 +187,7 @@ class Board(object):
                 pygame.draw.line(self.surface, self.design['big-border-color'],
                                  line[0], line[1], self.line_thickness * 2)
 
+        self.surface.blit(self.highlight_surf, (0, 0))
         self.outer_surface.blit(self.surface, [self.margin]*2)
 
 
@@ -233,6 +237,11 @@ class Board(object):
         if self.set_tile(coords, piece):
             self.switch_turns()
             self.update_allowed_moves(coords)
+
+            self.del_highlights(color=self.design['allowed-moves-color'])
+            for move in self.allowed_moves:
+                self.add_highlight(move, self.design['allowed-moves-color'])
+                self.draw_highlights()
             return True
         return False
 
@@ -250,24 +259,43 @@ class Board(object):
         return False
 
 
-    def highlight_tile(self, coords):
-        """Highlight the tile at specified coordinates with a chosen color."""
-        # We need to draw the board first to reset all previous highlights.
+    def draw_highlights(self):
+        """Draw the highlights to the surface."""
+        # We're gonna need to recreate the surface, otherwise old highlights
+        # could "stain" it.
+        self.highlight_surf = pygame.Surface([self.inner_size]*2, pygame.SRCALPHA)
+        for coords, color in self.highlights:
+            # Draw the highlight to the highlight surface.
+            x, y = map(lambda i: i + self.line_thickness, self.coords_to_pos(coords))
+            rect = pygame.Rect((x, y), (self.tile_size,)*2)
+            pygame.draw.rect(self.highlight_surf, color, rect, 0)
+
         self.draw_board()
 
-        # But, don't highlight any tiles that have a value!
-        if coords not in self.allowed_moves:
-            return
 
-        highlight = pygame.Surface([self.inner_size]*2, pygame.SRCALPHA)
+    def add_highlight(self, coords, color=None):
+        """Highlight the tile at specified coordinates with a chosen color."""
+        # Default to the design value.
+        color = color or self.design['highlight-color']
 
-        # What's this?
-        x, y = map(lambda i: i + self.line_thickness, self.coords_to_pos(coords))
-        rect = pygame.Rect((x, y), (self.tile_size,)*2)
-        pygame.draw.rect(highlight, self.design['highlight-color'], rect, 0)
+        # A tuple of the color because we don't know what we're getting.
+        self.highlights.append((coords, tuple(color)))
 
-        self.surface.blit(highlight, [0]*2)
-        self.outer_surface.blit(self.surface, [self.margin]*2)
+
+    def del_highlights(self, coords=None, color=None):
+        """Delete all highlights that match the coords and/or color."""
+        new_hls = self.highlights[:]
+        n_deleted = 0
+        for i, h in enumerate(self.highlights):
+            h_coords, h_color = h
+
+            # If coords are set, check those - same with color.
+            if (coords is None or coords == h_coords) and \
+               (color is None or tuple(color) == h_color):
+                del new_hls[i - n_deleted]
+                n_deleted = n_deleted + 1
+
+        self.highlights = new_hls
 
 
     def get_size(self):

@@ -19,6 +19,7 @@ BOARD_DESIGN = {
     'small-border-color':   (0, 0, 0),
     'big-border-color'  :   (255, 0, 0),
     'highlight-color'   :   pygame.Color(0, 0, 0, 32),
+    'allowed-moves-color':  pygame.Color(0, 255, 0, 32),
     'font-name'         :   FONT,
     'font-size'         :   FONT_SIZE,
     'text-color'        :   TEXT_COLOR
@@ -64,17 +65,29 @@ window.blit(b.outer_surface, (0, 0))
 pygame.display.update()
 
 draw_turn(b.get_turn_text())
+highlight = None
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
+
         elif event.type == MOUSEMOTION:
+            # Give the tile under the cursor a grey highlight.
             pos = b.pos_in_board(event.pos)
-            if pos:
-                b.highlight_tile(b.pos_to_coords(pos))
+
+            if pos and b.pos_to_coords(pos) in b.allowed_moves:
+                # Remove the old highlighted tile and replace it by this one.
+                b.del_highlights(highlight, BOARD_DESIGN['highlight-color'])
+                highlight = b.pos_to_coords(pos)
+                b.add_highlight(highlight)
+
+            # Or just remove it if the cursor is outside the board.
             else:
-                b.draw_board()
+                b.del_highlights(highlight, BOARD_DESIGN['highlight-color'])
+                highlight = None
+            b.draw_highlights()
+
         elif event.type == MOUSEBUTTONUP:
             pos = b.pos_in_board(event.pos)
             if pos:
