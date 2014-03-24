@@ -83,7 +83,7 @@ class Cross(Piece):
 
 
 class Board(object):
-    def __init__(self, pieces, tile_size, line_thickness, margin, design, n_rows=3):
+    def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows=3):
         # Verify pieces
         self.pieces = []
         for piece in pieces:
@@ -95,7 +95,7 @@ class Board(object):
 
         # Calculate board size
         if not tile_size % 2:
-            warnings.warn('The design of the board is best with an odd tile_size.')
+            warnings.warn('The style of the board is best with an odd tile_size.')
 
         self.tile_size = tile_size
         self.line_thickness = line_thickness
@@ -113,18 +113,18 @@ class Board(object):
 
         self.highlights = []
 
-        self.design = design
+        self.style = style
         self.reset()
 
 
     def pygame_init(self):
         self.outer_surface = pygame.Surface([self.outer_size]*2)
-        self.outer_surface.fill(self.design['background-color'])
+        self.outer_surface.fill(self.style['background-color'])
 
         # Draw the row and column numbers.
-        font = pygame.font.Font(pygame.font.match_font(self.design['font-name']), self.design['font-size'])
+        font = pygame.font.Font(pygame.font.match_font(self.style['font-name']), self.style['font-size'])
         for i in range(self.n_rows**2):
-            f = font.render(str(i), False, self.design['text-color'])
+            f = font.render(str(i), False, self.style['text-color'])
             rect = f.get_rect()
             rect.topleft = (
                 self.tile_line_size*(i+1)-rect.width/2-self.tile_line_size/2+self.margin,
@@ -152,7 +152,7 @@ class Board(object):
 
     def draw_board(self):
         """Draw the board to the surface, with everything on it."""
-        self.surface.fill(self.design['background-color'])
+        self.surface.fill(self.style['background-color'])
 
         for x in range(self.n_rows**2):
             for y in range(self.n_rows**2):
@@ -164,7 +164,7 @@ class Board(object):
                 rect = pygame.Rect(pos, [self.tile_line_size]*2)
                 pygame.draw.rect(
                     self.surface,
-                    self.design['small-border-color'],
+                    self.style['small-border-color'],
                     rect,
                     self.line_thickness
                 )
@@ -184,7 +184,7 @@ class Board(object):
             ]
 
             for line in lines:
-                pygame.draw.line(self.surface, self.design['big-border-color'],
+                pygame.draw.line(self.surface, self.style['big-border-color'],
                                  line[0], line[1], self.line_thickness * 2)
 
         self.surface.blit(self.highlight_surf, (0, 0))
@@ -238,9 +238,9 @@ class Board(object):
             self.switch_turns()
             self.update_allowed_moves(coords)
 
-            self.del_highlights(color=self.design['allowed-moves-color'])
+            self.del_highlights(color=self.style['allowed-moves-color'])
             for move in self.allowed_moves:
-                self.add_highlight(move, self.design['allowed-moves-color'])
+                self.add_highlight(move, self.style['allowed-moves-color'])
                 self.draw_highlights()
             return True
         return False
@@ -275,8 +275,8 @@ class Board(object):
 
     def add_highlight(self, coords, color=None):
         """Highlight the tile at specified coordinates with a chosen color."""
-        # Default to the design value.
-        color = color or self.design['highlight-color']
+        # Default to the style value.
+        color = color or self.style['highlight-color']
 
         # A tuple of the color because we don't know what we're getting.
         self.highlights.append((coords, tuple(color)))

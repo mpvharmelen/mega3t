@@ -14,7 +14,7 @@ PROGRAM_NAME = 'Mega3T'
 FONT = 'courier new'
 FONT_SIZE = 16
 
-BOARD_DESIGN = {
+BOARD_STYLE = {
     'background-color'  :   BACKGROUND_COLOR,
     'small-border-color':   (0, 0, 0),
     'big-border-color'  :   (255, 0, 0),
@@ -31,7 +31,7 @@ b = board.Board(
         TILE_SIZE,
         LINE_THICKNESS,
         MARGIN,
-        BOARD_DESIGN
+        BOARD_STYLE
     )
 
 window_size = (b.get_size() + 160, b.get_size())
@@ -78,13 +78,13 @@ while True:
 
             if pos and b.pos_to_coords(pos) in b.allowed_moves:
                 # Remove the old highlighted tile and replace it by this one.
-                b.del_highlights(highlight, BOARD_DESIGN['highlight-color'])
+                b.del_highlights(highlight, BOARD_STYLE['highlight-color'])
                 highlight = b.pos_to_coords(pos)
                 b.add_highlight(highlight)
 
             # Or just remove it if the cursor is outside the board.
             else:
-                b.del_highlights(highlight, BOARD_DESIGN['highlight-color'])
+                b.del_highlights(highlight, BOARD_STYLE['highlight-color'])
                 highlight = None
             b.draw_highlights()
 
