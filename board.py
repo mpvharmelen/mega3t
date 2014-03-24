@@ -40,7 +40,7 @@ class Cross(Piece):
 
 
 class Board(object):
-    def __init__(self, pieces, size, margin, colors):
+    def __init__(self, pieces, pixl_size, pixl_margin, colors, font='courier new', nr_rows=3):
         self.pieces = []
         for piece in pieces:
             if isinstance(piece, Piece):
@@ -50,28 +50,29 @@ class Board(object):
                                 '(a subclass of) Piece.')
         self.turn = 0
 
-        self.real_size, self.margin = size, margin
-        self.size, self.tile_size = size-margin, (size-margin)/9
+        self.real_size, self.margin = pixl_size, pixl_margin
+        self.size, self.tile_size = pixl_size-pixl_margin, (pixl_size-pixl_margin)/nr_rows**2
         self.colors = colors
+        self.nr_rows = nr_rows
 
-        self.tiles = [[None]*9 for i in range(1, 10)]
+        self.tiles = [[None]*nr_rows**2 for i in range(nr_rows**2)]
 
         self.outer_surface = pygame.Surface((self.real_size, self.real_size))
         self.outer_surface.fill(colors['background'])
 
         # Draw the row and column numbers.
-        font = pygame.font.Font(pygame.font.match_font('courier new'), 16)
-        for i in range(1, 10):
+        font = pygame.font.Font(pygame.font.match_font(font), 16)
+        for i in range(nr_rows**2):
             f = font.render(str(i), False, self.colors['border'])
             rect = f.get_rect()
             rect.topleft = (
-                self.tile_size*(i)-rect.width/2-self.tile_size/2+self.margin,
+                self.tile_size*(i+1)-rect.width/2-self.tile_size/2+self.margin,
                 self.margin/2-rect.height/2
             )
             self.outer_surface.blit(f, rect)
             rect.topleft = (
                 self.margin/2-rect.width/2,
-                self.tile_size*(i)-rect.height/2-self.tile_size/2+self.margin
+                self.tile_size*(i+1)-rect.height/2-self.tile_size/2+self.margin
             )
             self.outer_surface.blit(f, rect)
 
@@ -84,15 +85,15 @@ class Board(object):
     def draw_board(self):
         """Draw the board to the surface, with everything on it."""
         self.surface.fill(self.colors['background'])
-        for x in range(1, 10):
-            for y in range(1, 10):
+        for x in range(self.nr_rows**2):
+            for y in range(self.nr_rows**2):
                 # First draw the tile itself, which is just some borders.
                 pos = self.coords_to_pos((x, y))
                 rect = pygame.Rect(pos, [self.tile_size]*2)
                 pygame.draw.rect(self.surface, self.colors['border'], rect, 1)
 
                 # Then draw a circle or cross in it, if necessary.
-                tile = self.tiles[x-1][y-1]
+                tile = self.tiles[x][y]
                 if tile == CIRCLE:
                     pygame.draw.circle(
                         self.surface,
@@ -102,6 +103,7 @@ class Board(object):
                         2
                     )
                 elif tile == CROSS:
+                    # Where did all those fours and sixes come from?
                     pygame.draw.line(
                         self.surface,
                         self.colors['cross'],
@@ -131,21 +133,21 @@ class Board(object):
 
 
     def coords_to_pos(self, coords):
-        """Take coordinates (from 1 to 9) and turn them into pixel positions."""
+        """Take coordinates (from 0 to 8) and turn them into pixel positions."""
         x, y = coords
-        return (x-1)*self.tile_size, (y-1)*self.tile_size
+        return (x)*self.tile_size, (y)*self.tile_size
 
 
     def pos_to_coords(self, pos):
-        """Take pixel positions and turn them into coordinates (from 1 to 9)."""
+        """Take pixel positions and turn them into coordinates (from 0 to 8)."""
         x, y = pos
-        return math.ceil(x/self.tile_size), math.ceil(y/self.tile_size)
+        return math.floor(x/self.tile_size), math.floor(y/self.tile_size)
 
 
     def set_tile(self, coords, value, force=False):
-        """Set the value of the tile at coodinates to a cross or circle."""
-        if force or self.tiles[coords[0]-1][coords[1]-1] is None:
-            self.tiles[coords[0]-1][coords[1]-1] = value
+        """Set the value of the tile at coordinates to a cross or circle."""
+        if force or self.tiles[coords[0]][coords[1]] is None:
+            self.tiles[coords[0]][coords[1]] = value
 
             self.draw_board()
             return True
@@ -158,10 +160,11 @@ class Board(object):
         self.draw_board()
 
         # But, don't highlight any tiles that have a value!
-        if self.tiles[coords[0]-1][coords[1]-1] is not None:
+        if self.tiles[coords[0]][coords[1]] is not None:
             return
         highlight = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
 
+        # What's this?
         x, y = map(lambda i: i+1, self.coords_to_pos(coords))
         rect = pygame.Rect((x, y), (self.tile_size-2,)*2)
         pygame.draw.rect(highlight, self.colors['highlight'], rect, 0)
