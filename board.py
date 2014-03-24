@@ -129,34 +129,10 @@ class Board(object):
                 rect = pygame.Rect(pos, [self.tile_size]*2)
                 pygame.draw.rect(self.surface, self.colors['border'], rect, 1)
 
-                # Then draw a circle or cross in it, if necessary.
+                # Then draw a piece in it, if necessary.
                 tile = self.tiles[x][y]
                 if tile is not None:
                     tile.draw(self.surface, pos, self.tile_size)
-                # if isinstance(tile, Nought):
-                #     pygame.draw.circle(
-                #         self.surface,
-                #         self.colors['circle'],
-                #         (int(pos[0]+self.tile_size/2), int(pos[1]+self.tile_size/2)),
-                #         int(self.tile_size/2*0.9),
-                #         2
-                #     )
-                # elif isinstance(tile, Cross):
-                #     # Where did all those fours and sixes come from?
-                #     pygame.draw.line(
-                #         self.surface,
-                #         self.colors['cross'],
-                #         (pos[0]+4, pos[1]+4),
-                #         (pos[0]+self.tile_size-6, pos[1]+self.tile_size-6),
-                #         2
-                #     )
-                #     pygame.draw.line(
-                #         self.surface,
-                #         self.colors['cross'],
-                #         (pos[0]+self.tile_size-6, pos[1]+4),
-                #         (pos[0]+4, pos[1]+self.tile_size-6),
-                #         2
-                #     )
 
         # Now draw the four "big" lines on the board.
         lines = (
