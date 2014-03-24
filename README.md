@@ -135,7 +135,7 @@ arise and it becomes more chess-like.
 * Shows a Mega3T board.
 * Allows for entering O's and X's.
 * Keeps track of whose turn it is.
-* [planned] Enforce gameplay rules.
+* [in progress] Enforce gameplay rules.
 * [planned] Show winner.
 * [planned] Online multiplayer mode.
 * [planned] AI.
