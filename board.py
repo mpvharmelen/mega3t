@@ -14,7 +14,7 @@ class Piece(object):
         self.thickness = thickness
 
     def draw(self, surface, pos, size):
-        '''Draws the representation of a piece.'''
+        """Draws the representation of a piece."""
         raise NotImplemented('You must write this for each piece.')
 
 class Nought(Piece):
@@ -27,7 +27,7 @@ class Nought(Piece):
             print(self.thickness, type(self.thickness))
 
     def draw(self, surface, pos, size):
-        '''Draws the representation of a Nought.'''
+        """Draws the representation of a Nought."""
         if 'Nought' in DEBUG:
             print('Nought.draw')
             print('Surface'.ljust(DEBUG_LJUST), surface, type(surface))
@@ -50,7 +50,7 @@ class Cross(Piece):
         super(Cross, self).__init__(name, color)
 
     def draw(self, surface, pos, size):
-        '''Draws the representation of a Cross.'''
+        """Draws the representation of a Cross."""
         if 'Cross' in DEBUG:
             print('Cross.draw')
             print('Surface'.ljust(DEBUG_LJUST), surface, type(surface))
@@ -191,7 +191,7 @@ class Board(object):
 
 
     def make_a_move(self, coords):
-        '''Add piece of whoever's turn it is to the given coordinates.'''
+        """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.pieces[self.turn]
         if self.set_tile(coords, piece):
             self.switch_turns()
