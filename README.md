@@ -44,7 +44,7 @@ Okay, picture a Mega3T board:
 
 The first player gets to play where-ever she wants. The other player has to
 play in the small board in the location where the first player played in her
-chosen small board. So, let's say the first player starts out here (3, 2):
+chosen small board. So, let's say the first player starts out here (2, 1):
 
      | |  |  | |  |  | |
     -+-+- | -+-+- | -+-+-
@@ -70,7 +70,7 @@ chosen small board. So, let's say the first player starts out here (3, 2):
 
 She played in the middle right tile of that particular small board, so her
 opponent now has to play in the small board in the middle right of the larger
-board. Say she chooses the middle left tile (7, 5):
+board. Say she chooses the middle left tile (6, 4):
 
      | |  |  | |  |  | |
     -+-+- | -+-+- | -+-+-
