@@ -3,8 +3,9 @@
 
 > So what is this Mega3T thing?
 
-Mega3T (Mega Tic-Tac-Toe), is a game based on the well-known timekiller
-tic-tac-toe (3t). It's a bit bigger though...
+Mega3T (Mega Tic-Tac-Toe), more commonly known as Ultimate Tic Tac Toe or
+Extreme Tic Tac Toe, is a game based on the well-known timekiller tic-tac-toe
+(3t). It's a bit bigger though...
 
 > How do you play it then?
 
@@ -13,6 +14,9 @@ tile. The players fill the small tiles, but can only play in the small board
 that was played in the previous turn.
 
 > Huh?
+
+So I wrote a description below, but you can also just read
+[http://mathwithbaddrawings.com/2013/06/16/ultimate-tic-tac-toe/](this excellent explanation).
 
 Okay, picture a Mega3T board:
 
