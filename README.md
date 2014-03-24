@@ -16,7 +16,7 @@ that was played in the previous turn.
 > Huh?
 
 So I wrote a description below, but you can also just read
-[http://mathwithbaddrawings.com/2013/06/16/ultimate-tic-tac-toe/](this excellent explanation).
+[this excellent explanation](http://mathwithbaddrawings.com/2013/06/16/ultimate-tic-tac-toe/).
 
 Okay, picture a Mega3T board:
 
