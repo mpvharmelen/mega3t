@@ -134,5 +134,5 @@ arise and it becomes more chess-like.
 * [planned] Enforce gameplay rules.
 * [planned] Show winner.
 * [planned] Online multiplayer mode.
-* [planned] (Learning?) AI.
+* [planned] AI.
 * [who knows] Android app?
