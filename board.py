@@ -143,7 +143,7 @@ class Board(object):
         self.tiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
         self.allowed_moves = []
         for x in range(self.n_rows**2):
-            self.allowed_moves.extend([(x, y) for y in range(n_rows**2)])
+            self.allowed_moves.extend([(x, y) for y in range(self.n_rows**2)])
         self.turn = 0
 
 
@@ -210,23 +210,36 @@ class Board(object):
         self.turn = (self.turn + 1) % len(self.pieces)
 
 
-    def _get_allowed_moves(self, last_move):
-        ...
+    def update_allowed_moves(self, last_move):
+        self.allowed_moves = []
+        big_x, big_y = last_move[0] % self.n_rows, last_move[1] % self.n_rows
+        start_x, start_y = big_x * self.n_rows, big_y * self.n_rows
 
+        for x in range(self.n_rows):
+            self.allowed_moves.extend([
+                (start_x + x, start_y + y)
+                for y in range(self.n_rows)
+            ])
+
+        # Remove occupied places
+        for x in range(start_x, start_x + self.n_rows):
+            for y in range(start_y, start_y + self.n_rows):
+                if self.tiles[x][y] is not None:
+                    self.allowed_moves.remove((x, y))
 
     def make_a_move(self, coords):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.pieces[self.turn]
         if self.set_tile(coords, piece):
             self.switch_turns()
-            self.allowed_moves = self._get_allowed_moves(coords)
+            self.update_allowed_moves(coords)
             return True
         return False
 
 
     def set_tile(self, coords, value, force=False):
         """Set the value of the tile at coordinates to given piece."""
-        if force or self.tiles[coords[0]][coords[1]] is None:
+        if force or coords in self.allowed_moves:
             if value in self.pieces:
                 self.tiles[coords[0]][coords[1]] = value
             else:
