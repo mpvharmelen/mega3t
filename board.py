@@ -5,9 +5,51 @@ from pygame.locals import *
 CIRCLE = 0
 CROSS = 1
 
+class Piece(object):
+    def __init__(self, name, color):
+        self.name = name
+        self.color = color
+
+    def draw(self, coords, size):
+        '''Draws the representation of a piece.'''
+        raise NotImplemented('You must write this for each piece.')
+
+class Nought(Piece):
+    def __init__(self):
+        name = 'nought'
+        color = (0, 155, 0)
+        super(Nought, self).__init__(name, color)
+
+    def draw(self, surface, coords, size):
+        pygame.draw.circle(
+            surface,
+            self.color,
+            coords,
+            size,
+            2 # What the ** is this 2 for?
+        )
+
+class Cross(Piece):
+    def __init__(self):
+        name = 'cross'
+        color = (0, 0, 255)
+        super(Nought, self).__init__(name, color)
+
+    def draw(self, coords, size):
+        ...
+
 
 class Board(object):
-    def __init__(self, size, margin, colors):
+    def __init__(self, pieces, size, margin, colors):
+        self.pieces = []
+        for piece in pieces:
+            if isinstance(piece, Piece):
+                self.pieces.append(piece)
+            else:
+                raise TypeError('All pieces must be an instance of '
+                                '(a subclass of) Piece.')
+        self.turn = 0
+
         self.real_size, self.margin = size, margin
         self.size, self.tile_size = size-margin, (size-margin)/9
         self.colors = colors
@@ -36,6 +78,8 @@ class Board(object):
         self.surface = pygame.Surface((self.size, self.size))
         self.draw_board()
 
+    def switch_turns(self):
+        self.turn = (self.turn + 1) % len(self.pieces)
 
     def draw_board(self):
         """Draw the board to the surface, with everything on it."""

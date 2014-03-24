@@ -40,6 +40,7 @@ def draw_turn(turn):
     window.blit(turn_text, (680, 20+title.get_rect().height))
 
 b = board.Board(
+        [],
         BOARD_SIZE[0]+MARGIN,
         MARGIN,
         {
