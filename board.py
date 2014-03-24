@@ -210,11 +210,16 @@ class Board(object):
         self.turn = (self.turn + 1) % len(self.pieces)
 
 
+    def _get_allowed_moves(self, last_move):
+        ...
+
+
     def make_a_move(self, coords):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.pieces[self.turn]
         if self.set_tile(coords, piece):
             self.switch_turns()
+            self.allowed_moves = self._get_allowed_moves(coords)
             return True
         return False
 
