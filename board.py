@@ -92,7 +92,6 @@ class Board(object):
             else:
                 raise TypeError('All pieces must be an instance of '
                                 '(a subclass of) Piece.')
-        self.turn = 0
 
         # Calculate board size
         if not tile_size % 2:
@@ -142,6 +141,7 @@ class Board(object):
 
     def reset(self):
         self.tiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
+        self.turn = 0
 
 
     def draw_board(self):
