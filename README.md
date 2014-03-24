@@ -1,5 +1,5 @@
 # Mega3T
-## Harder, better, faster, stronger tic-tac-toe
+**Harder, better, faster, stronger tic-tac-toe**
 
 > So what is this Mega3T thing?
 
