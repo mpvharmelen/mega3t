@@ -3,6 +3,7 @@ from pygame.locals import *
 
 import board
 
+# Constants
 TILE_SIZE = 55
 LINE_THICKNESS = 1
 MARGIN = 20
@@ -25,7 +26,7 @@ BOARD_STYLE = {
     'text-color'        :   TEXT_COLOR
 }
 
-
+# Initialize board instance.
 b = board.Board(
         [board.Cross(CROSS_COLOR), board.Nought(NOUGHT_COLOR)],
         TILE_SIZE,
@@ -34,8 +35,8 @@ b = board.Board(
         BOARD_STYLE
     )
 
+# Set up PyGame display.
 window_size = (b.get_size() + 160, b.get_size())
-
 pygame.init()
 window = pygame.display.set_mode(window_size)
 window.fill(BACKGROUND_COLOR)
@@ -60,11 +61,13 @@ def draw_turn(turn_str):
     turn_text = font.render(turn_str, False, TEXT_COLOR)
     window.blit(turn_text, (b.get_size(), MARGIN+title.get_rect().height))
 
+# Initialize board graphics, start game.
 b.pygame_init()
 window.blit(b.outer_surface, (0, 0))
 pygame.display.update()
-
 draw_turn(b.get_turn_text())
+
+# Main loop
 highlight = None
 while True:
     for event in pygame.event.get():
@@ -89,6 +92,7 @@ while True:
             b.draw_highlights()
 
         elif event.type == MOUSEBUTTONUP:
+            # If we're clicking on the board somewhere, make a move.
             pos = b.pos_in_board(event.pos)
             if pos:
                 if b.make_a_move(b.pos_to_coords(pos)):
