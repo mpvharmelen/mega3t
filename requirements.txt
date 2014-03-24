@@ -1,0 +1,3 @@
+Mega3T requires:
+- Python 3.x
+- PyGame (1.9+?)
