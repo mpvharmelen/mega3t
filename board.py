@@ -41,7 +41,7 @@ class Nought(Piece):
             print('Pos'.ljust(DEBUG_LJUST), pos, type(pos), [type(x) for x in pos])
             print('Size'.ljust(DEBUG_LJUST), size, type(size))
             print('Thickness'.ljust(DEBUG_LJUST), self.thickness, type(self.thickness))
-        pos = (math.ceil(pos[0] + size/2), math.ceil(pos[1] + size/2))
+        pos = (int(math.ceil(pos[0] + size/2)), int(math.ceil(pos[1] + size/2)))
         pygame.draw.circle(
             surface,
             self.color,
@@ -206,7 +206,7 @@ class Board(object):
     def pos_to_coords(self, pos):
         """Take pixel positions and turn them into coordinates (from 0 to 8)."""
         x, y = pos
-        coords = (math.floor(x/self.tile_line_size), math.floor(y/self.tile_line_size))
+        coords = (int(math.floor(x/self.tile_line_size)), int(math.floor(y/self.tile_line_size)))
         if 'pos_to_coords' in DEBUG:
             print('Board.pos_to_coords')
             print('Coords'.ljust(DEBUG_LJUST), coords, type(coords), [type(x) for x in coords])
