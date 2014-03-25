@@ -14,6 +14,7 @@ NOUGHT_COLOR = (0, 155, 0)
 PROGRAM_NAME = 'Mega3T'
 FONT = 'courier new'
 FONT_SIZE = 16
+TPS = 50
 
 BOARD_STYLE = {
     'background-color'  :   BACKGROUND_COLOR,
@@ -67,6 +68,7 @@ turn_text = draw_turn(turn_text, b.get_turn_text())
 
 # Main loop
 highlight = None
+clock = pygame.time.Clock()
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -98,3 +100,4 @@ while True:
 
     window.blit(b.outer_surface, (0, 0))
     pygame.display.update()
+    clock.tick(TPS)
