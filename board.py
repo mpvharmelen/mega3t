@@ -118,7 +118,7 @@ class Board(object):
 
 
     def pygame_init(self):
-        '''Initialize everything to do with pygame.'''
+        """Initialize everything to do with pygame."""
         self.outer_surface = pygame.Surface([self.outer_size]*2)
         self.outer_surface.fill(self.style['background-color'])
 
@@ -144,7 +144,7 @@ class Board(object):
 
 
     def reset(self):
-        '''Reset the board to play a game from the start.'''
+        """Reset the board to play a game from the start."""
         self.small_tiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
         self.large_tiles = [[None]*self.n_rows    for i in range(self.n_rows)]
         self.allowed_moves = []
