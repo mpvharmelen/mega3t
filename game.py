@@ -49,23 +49,21 @@ window.blit(title, (b.get_size(), MARGIN))
 
 font = pygame.font.Font(pygame.font.match_font(FONT), FONT_SIZE)
 turn_text = font.render('', False, TEXT_COLOR)
-def draw_turn(turn_str):
+def draw_turn(turn_text, turn_str):
     """Override the turn text to show who's turn it is."""
-    # omg a global!? Yeah I'm sorry, I got lazy. TODO!
-    global turn_text
-
     # Draw a white rectangle over the old text, then write a new text!
     override_rect = pygame.Rect((b.get_size(), MARGIN+title.get_rect().height), turn_text.get_rect().size)
     pygame.draw.rect(window, BACKGROUND_COLOR, override_rect)
     turn_str = 'Turn: ' + turn_str
     turn_text = font.render(turn_str, False, TEXT_COLOR)
     window.blit(turn_text, (b.get_size(), MARGIN+title.get_rect().height))
+    return turn_text
 
 # Initialize board graphics, start game.
 b.pygame_init()
 window.blit(b.outer_surface, (0, 0))
 pygame.display.update()
-draw_turn(b.get_turn_text())
+turn_text = draw_turn(turn_text, b.get_turn_text())
 
 # Main loop
 highlight = None
@@ -96,7 +94,7 @@ while True:
             pos = b.pos_in_board(event.pos)
             if pos:
                 if b.make_a_move(b.pos_to_coords(pos)):
-                    draw_turn(b.get_turn_text())
+                    turn_text = draw_turn(turn_text, b.get_turn_text())
 
     window.blit(b.outer_surface, (0, 0))
     pygame.display.update()
