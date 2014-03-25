@@ -118,6 +118,7 @@ class Board(object):
 
 
     def pygame_init(self):
+        '''Initialize everything to do with pygame.'''
         self.outer_surface = pygame.Surface([self.outer_size]*2)
         self.outer_surface.fill(self.style['background-color'])
 
@@ -143,7 +144,9 @@ class Board(object):
 
 
     def reset(self):
-        self.tiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
+        '''Reset the board to play a game from the start.'''
+        self.small_tiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
+        self.large_tiles = [[None]*self.n_rows    for i in range(self.n_rows)]
         self.allowed_moves = []
         for x in range(self.n_rows**2):
             self.allowed_moves.extend([(x, y) for y in range(self.n_rows**2)])
@@ -170,7 +173,7 @@ class Board(object):
                 )
 
                 # Then draw a piece in it, if necessary.
-                tile = self.tiles[x][y]
+                tile = self.small_tiles[x][y]
                 pos = (pos[0] + self.line_thickness, pos[1] + self.line_thickness)
                 if tile is not None:
                     tile.draw(self.surface, pos, self.tile_size)
@@ -228,7 +231,7 @@ class Board(object):
         # Remove occupied places
         for x in range(start_x, start_x + self.n_rows):
             for y in range(start_y, start_y + self.n_rows):
-                if self.tiles[x][y] is not None:
+                if self.small_tiles[x][y] is not None:
                     self.allowed_moves.remove((x, y))
 
     def make_a_move(self, coords):
@@ -250,7 +253,7 @@ class Board(object):
         """Set the value of the tile at coordinates to given piece."""
         if force or coords in self.allowed_moves:
             if value in self.pieces:
-                self.tiles[coords[0]][coords[1]] = value
+                self.small_tiles[coords[0]][coords[1]] = value
             else:
                 raise TypeError("Value should be one of the board's pieces.")
 
