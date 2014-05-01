@@ -219,19 +219,34 @@ class Board(object):
         self.turn = (self.turn + 1) % len(self.pieces)
 
 
-    def check_winner(self, last_move):
+    def find_and_highlight_winner(self, last_piece, last_move):
         """
-        Check if someone has won a small area and maybe even the whole game!
-        Also updates self.large_tiles accordingly.
-
-
-        obj.check_winner(last_move) ->
-            ((has_won_area, winning_line), (has_won_game, winning_line))
+        Check if someone won a small area and maybe even the whole game!
+        Also updates self.large_tiles and self.highlights accordingly.
         """
-        # Okay, so here's the deal. You only have to check the last small area
-        # someone played in, because you can't win anywhere else (and otherwise
-        # we would have already noticed).
+        # You only have to check the last small area someone played in,
+        # because you can't win anywhere else (and otherwise we would have
+        # already noticed).
 
+        has_won, area_coords, winning_line = self.check_winner_small_area(last_piece, last_move)
+        if has_won:
+            # TODO: highlight small area and winning line
+            print('{} won {}'.format(last_piece, area_coords))
+            self.large_tiles[area_coords[0]][area_coords[1]] = last_piece
+            won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.large_tiles)
+            if won_game:
+                # TODO: highlight big winning line
+                return last_piece
+        return None
+
+
+    def check_winner_small_area(self, last_piece, last_move):
+        """
+        Check if someone won a small area.
+
+
+        obj.check_winner(last_move) -> (has_won, area_coords, winning_line)
+        """
         # Coordinates of small area in self.large_tiles
         big_x = int(last_move[0] / self.n_rows)
         big_y = int(last_move[1] / self.n_rows)
@@ -239,6 +254,9 @@ class Board(object):
         # Starting coordinates of small area in self.small_tiles
         start_x = big_x * self.n_rows
         start_y = big_y * self.n_rows
+
+        # Coords of last_move in small area:
+        small_coords = (last_move[0] % self.n_rows, last_move[1] % self.n_rows)
 
         # Create working area
         working_grid = []
@@ -248,23 +266,11 @@ class Board(object):
                 for y in range(self.n_rows)
             ])
 
-        # Coords of last_move in small area:
-        small_coords = (last_move[0] % self.n_rows, last_move[1] % self.n_rows)
-
-        has_won_area, small_winning_line = self.check_has_line(small_coords, working_grid)
-        if has_won_area:
-            self.large_tiles[big_x][big_y] = working_grid[small_coords[0]][small_coords[1]]
-            has_won_game, big_winning_line = self.check_has_line((big_x, big_y), self.large_tiles)
-        else:
-            has_won_game = False
-            big_winning_line = []
-
-        return (has_won_area, small_winning_line), (has_won_game, big_winning_line)
+        has_won, winning_line = self.check_has_line(last_piece, small_coords, working_grid)
+        return has_won, (big_x, big_y), winning_line
 
 
-
-
-    def check_has_line(self, last_move, grid):
+    def check_has_line(self, last_piece, last_move, grid):
         """
         Check if the last move was a winning won.
 
@@ -298,9 +304,9 @@ class Board(object):
                 [grid[co][-co - 1] for co in range(self.n_rows)])
             )
 
-        last_piece = grid[last_move[0]][last_move[1]]
         other_pieces = self.pieces.copy()
-        other_pieces.remove(last_piece)
+        while last_piece in other_pieces:
+            other_pieces.remove(last_piece)
         winning_coords = []
         has_won = False
         for coords, poss in possibilities:
@@ -315,6 +321,29 @@ class Board(object):
                 winning_coords = coords
                 break
         return has_won, winning_coords
+
+
+    def make_a_move(self, coords):
+        """Add piece of whoever's turn it is to the given coordinates."""
+        piece = self.pieces[self.turn]
+        if self.set_tile(coords, piece):
+            winning_player = self.find_and_highlight_winner(piece, coords)
+            if winning_player is not None:
+                self.end_of_game(winning_player)
+            self.switch_turns()
+            self.update_allowed_moves(coords)
+
+            self.del_highlights(color=self.style['allowed-moves-color'])
+            for move in self.allowed_moves:
+                self.add_highlight(move, self.style['allowed-moves-color'])
+                self.draw_highlights()
+            return True
+        return False
+
+
+    def end_of_game(self, winning_player):
+        """Ends the game. Shows options for another game or exit."""
+        ...
 
 
     def update_allowed_moves(self, last_move):
@@ -333,21 +362,6 @@ class Board(object):
             for y in range(start_y, start_y + self.n_rows):
                 if self.small_tiles[x][y] is not None:
                     self.allowed_moves.remove((x, y))
-
-    def make_a_move(self, coords):
-        """Add piece of whoever's turn it is to the given coordinates."""
-        piece = self.pieces[self.turn]
-        if self.set_tile(coords, piece):
-            self.switch_turns()
-            self.check_winner(coords)
-            self.update_allowed_moves(coords)
-
-            self.del_highlights(color=self.style['allowed-moves-color'])
-            for move in self.allowed_moves:
-                self.add_highlight(move, self.style['allowed-moves-color'])
-                self.draw_highlights()
-            return True
-        return False
 
 
     def set_tile(self, coords, value, force=False):
