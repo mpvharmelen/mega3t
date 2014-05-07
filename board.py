@@ -337,7 +337,7 @@ class Board(object):
             self.del_highlights(color=self.style['allowed-moves-color'])
             for move in self.allowed_moves:
                 self.add_highlight(move, self.style['allowed-moves-color'])
-                self.draw_highlights()
+            self.draw_highlights()
             return True
         return False
 
