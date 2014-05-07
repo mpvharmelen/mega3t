@@ -231,10 +231,13 @@ class Board(object):
         has_won, area_coords, winning_line = self.check_winner_small_area(last_piece, last_move)
         if has_won:
             # TODO: highlight small area and winning line
-            print('{} won {}'.format(last_piece, area_coords))
+            if DEBUG:
+                print('{} won {}'.format(last_piece, area_coords))
             self.large_tiles[area_coords[0]][area_coords[1]] = last_piece
             won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.large_tiles)
             if won_game:
+                if DEBUG:
+                    print('{} won the game!'.format(last_piece))
                 # TODO: highlight big winning line
                 return last_piece
         return None
@@ -349,19 +352,29 @@ class Board(object):
     def update_allowed_moves(self, last_move):
         self.allowed_moves = []
         big_x, big_y = last_move[0] % self.n_rows, last_move[1] % self.n_rows
-        start_x, start_y = big_x * self.n_rows, big_y * self.n_rows
+        if self.large_tiles[big_x][big_y] is not None:
+            # This large tile was occupied >> play anywhere
+            for x in range(self.n_rows):
+                for y in range(self.n_rows):
+                    if self.large_tiles[x][y] is None:
+                        allowed_moves = self.get_empty_small_tiles((x, y))
+                        self.allowed_moves.extend(allowed_moves)
+        else:
+            # Play withing this large tile
+            self.allowed_moves = self.get_empty_small_tiles((big_x, big_y))
+
+    def get_empty_small_tiles(self, big_coords):
+        empty = []
+        start_x, start_y = big_coords[0] * self.n_rows, big_coords[1] * self.n_rows
 
         for x in range(self.n_rows):
-            self.allowed_moves.extend([
+            empty.extend([
                 (start_x + x, start_y + y)
                 for y in range(self.n_rows)
+                if self.small_tiles[start_x + x][start_y + y] is None
             ])
 
-        # Remove occupied places
-        for x in range(start_x, start_x + self.n_rows):
-            for y in range(start_y, start_y + self.n_rows):
-                if self.small_tiles[x][y] is not None:
-                    self.allowed_moves.remove((x, y))
+        return empty
 
 
     def set_tile(self, coords, value, force=False):
