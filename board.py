@@ -1,10 +1,11 @@
 import math
 import pygame
 from pygame.locals import *
-import warnings
 
-DEBUG = []
-DEBUG_LJUST = 15
+import warnings
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 class Piece(object):
     def __init__(self, name, abbr, color, thickness=2):
@@ -28,19 +29,19 @@ class Nought(Piece):
         abbr = 'O'
         self.size = 0.9
         super(Nought, self).__init__(name, abbr, color)
-        if 'Nought' in DEBUG:
-            print('Nought.__init__')
-            print(self.thickness, type(self.thickness))
+
+        logging.debug('Nought.__init__')
+        logging.debug(self.thickness, type(self.thickness))
 
 
     def draw(self, surface, pos, size):
         """Draws the representation of a Nought."""
-        if 'Nought' in DEBUG:
-            print('Nought.draw')
-            print('Surface'.ljust(DEBUG_LJUST), surface, type(surface))
-            print('Pos'.ljust(DEBUG_LJUST), pos, type(pos), [type(x) for x in pos])
-            print('Size'.ljust(DEBUG_LJUST), size, type(size))
-            print('Thickness'.ljust(DEBUG_LJUST), self.thickness, type(self.thickness))
+        logging.debug('Nought.draw')
+        logging.debug('Surface', surface, type(surface))
+        logging.debug('Pos', pos, type(pos), [type(x) for x in pos])
+        logging.debug('Size', size, type(size))
+        logging.debug('Thickness', self.thickness, type(self.thickness))
+
         pos = (int(math.ceil(pos[0] + size/2)), int(math.ceil(pos[1] + size/2)))
         pygame.draw.circle(
             surface,
@@ -60,12 +61,12 @@ class Cross(Piece):
 
     def draw(self, surface, pos, size):
         """Draws the representation of a Cross."""
-        if 'Cross' in DEBUG:
-            print('Cross.draw')
-            print('Surface'.ljust(DEBUG_LJUST), surface, type(surface))
-            print('Pos'.ljust(DEBUG_LJUST), pos, type(pos), [type(x) for x in pos])
-            print('Size'.ljust(DEBUG_LJUST), size, type(size))
-            print('Thickness'.ljust(DEBUG_LJUST), self.thickness, type(self.thickness))
+        logging.debug('Cross.draw')
+        logging.debug('Surface', surface, type(surface))
+        logging.debug('Pos', pos, type(pos), [type(x) for x in pos])
+        logging.debug('Size', size, type(size))
+        logging.debug('Thickness', self.thickness, type(self.thickness))
+
         pygame.draw.line(
             surface,
             self.color,
@@ -162,9 +163,10 @@ class Board(object):
             for y in range(self.n_rows**2):
                 # First draw the tile itself, which is just some borders.
                 pos = self.coords_to_pos((x, y))
-                if 'pos' in DEBUG:
-                    print('Board.draw_board')
-                    print('pos'.ljust(DEBUG_LJUST), pos)
+
+                logging.debug('Board.draw_board')
+                logging.debug('pos', pos)
+
                 rect = pygame.Rect(pos, [self.tile_line_size]*2)
                 pygame.draw.rect(
                     self.surface,
@@ -197,9 +199,8 @@ class Board(object):
 
     def coords_to_pos(self, coords):
         """Take coordinates (from 0 to 8) and turn them into pixel positions."""
-        if 'coords_to_pos' in DEBUG:
-            print('Board.coords_to_pos')
-            print('Coords'.ljust(DEBUG_LJUST), coords, type(coords), [type(x) for x in coords])
+        logging.debug('Board.coords_to_pos')
+        logging.debug('Coords', coords, type(coords), [type(x) for x in coords])
         x, y = coords
         return (x)*self.tile_line_size, (y)*self.tile_line_size
 
@@ -208,9 +209,8 @@ class Board(object):
         """Take pixel positions and turn them into coordinates (from 0 to 8)."""
         x, y = pos
         coords = (int(math.floor(x/self.tile_line_size)), int(math.floor(y/self.tile_line_size)))
-        if 'pos_to_coords' in DEBUG:
-            print('Board.pos_to_coords')
-            print('Coords'.ljust(DEBUG_LJUST), coords, type(coords), [type(x) for x in coords])
+        logging.debug('Board.pos_to_coords')
+        logging.debug('Coords', coords, type(coords), [type(x) for x in coords])
         return coords
 
 
@@ -231,13 +231,11 @@ class Board(object):
         has_won, area_coords, winning_line = self.check_winner_small_area(last_piece, last_move)
         if has_won:
             # TODO: highlight small area and winning line
-            if DEBUG:
-                print('{} won {}'.format(last_piece, area_coords))
+            logging.info('{} won {}'.format(last_piece, area_coords))
             self.large_tiles[area_coords[0]][area_coords[1]] = last_piece
             won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.large_tiles)
             if won_game:
-                if DEBUG:
-                    print('{} won the game!'.format(last_piece))
+                logging.info('{} won the game!'.format(last_piece))
                 # TODO: highlight big winning line
                 return last_piece
         return None
