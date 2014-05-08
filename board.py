@@ -146,8 +146,8 @@ class Board(object):
 
     def reset(self):
         """Reset the board to play a game from the start."""
-        self.small_tiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
-        self.large_tiles = [[None]*self.n_rows    for i in range(self.n_rows)]
+        self.subtiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
+        self.megatiles = [[None]*self.n_rows    for i in range(self.n_rows)]
         self.winning_lines = []
         self.allowed_moves = []
         for x in range(self.n_rows**2):
@@ -176,7 +176,7 @@ class Board(object):
                 )
 
                 # Then draw a piece in it, if necessary.
-                tile = self.small_tiles[x][y]
+                tile = self.subtiles[x][y]
                 pos = (pos[0] + self.line_thickness, pos[1] + self.line_thickness)
                 if tile is not None:
                     tile.draw(self.surface, pos, self.tile_size)
@@ -221,19 +221,20 @@ class Board(object):
 
     def find_and_highlight_winner(self, last_piece, last_move):
         """
-        Check if someone won a small area and maybe even the whole game!
-        Also updates self.large_tiles and self.highlights accordingly.
+        Check if someone won a megatile and maybe even the whole game!
+        Also updates self.megatiles and self.highlights accordingly.
         """
-        # You only have to check the last small area someone played in,
+        # You only have to check the last megatile someone played in,
         # because you can't win anywhere else (and otherwise we would have
         # already noticed).
 
-        has_won, area_coords, winning_line = self.check_winner_small_area(last_piece, last_move)
+        has_won, area_coords, winning_line = self.check_winner_megatile(last_piece, last_move)
         if has_won:
-            # TODO: highlight small area and winning line
-            logging.info('{} won {}'.format(last_piece, area_coords))
-            self.large_tiles[area_coords[0]][area_coords[1]] = last_piece
-            won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.large_tiles)
+            print(area_coords, winning_line)
+            # TODO: highlight megatile and winning line
+            logging.info('{} won megatile {}'.format(last_piece, area_coords))
+            self.megatiles[area_coords[0]][area_coords[1]] = last_piece
+            won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.megatiles)
             if won_game:
                 logging.info('{} won the game!'.format(last_piece))
                 # TODO: highlight big winning line
@@ -241,29 +242,29 @@ class Board(object):
         return None
 
 
-    def check_winner_small_area(self, last_piece, last_move):
+    def check_winner_megatile(self, last_piece, last_move):
         """
-        Check if someone won a small area.
+        Check if someone won a megatile.
 
 
         obj.check_winner(last_move) -> (has_won, area_coords, winning_line)
         """
-        # Coordinates of small area in self.large_tiles
+        # Coordinates of megatile in self.megatiles
         big_x = int(last_move[0] / self.n_rows)
         big_y = int(last_move[1] / self.n_rows)
 
-        # Starting coordinates of small area in self.small_tiles
+        # Starting coordinates of megatile in self.subtiles
         start_x = big_x * self.n_rows
         start_y = big_y * self.n_rows
 
-        # Coords of last_move in small area:
+        # Coords of last_move in megatile:
         small_coords = (last_move[0] % self.n_rows, last_move[1] % self.n_rows)
 
         # Create working area
         working_grid = []
         for x in range(self.n_rows):
             working_grid.append([
-                self.small_tiles[start_x + x][start_y + y]
+                self.subtiles[start_x + x][start_y + y]
                 for y in range(self.n_rows)
             ])
 
@@ -350,18 +351,18 @@ class Board(object):
     def update_allowed_moves(self, last_move):
         self.allowed_moves = []
         big_x, big_y = last_move[0] % self.n_rows, last_move[1] % self.n_rows
-        if self.large_tiles[big_x][big_y] is not None:
-            # This large tile was occupied >> play anywhere
+        if self.megatiles[big_x][big_y] is not None:
+            # This megatile was occupied >> play anywhere
             for x in range(self.n_rows):
                 for y in range(self.n_rows):
-                    if self.large_tiles[x][y] is None:
-                        allowed_moves = self.get_empty_small_tiles((x, y))
+                    if self.megatiles[x][y] is None:
+                        allowed_moves = self.get_empty_subtiles((x, y))
                         self.allowed_moves.extend(allowed_moves)
         else:
-            # Play withing this large tile
-            self.allowed_moves = self.get_empty_small_tiles((big_x, big_y))
+            # Play withing this megatile
+            self.allowed_moves = self.get_empty_subtiles((big_x, big_y))
 
-    def get_empty_small_tiles(self, big_coords):
+    def get_empty_subtiles(self, big_coords):
         empty = []
         start_x, start_y = big_coords[0] * self.n_rows, big_coords[1] * self.n_rows
 
@@ -369,7 +370,7 @@ class Board(object):
             empty.extend([
                 (start_x + x, start_y + y)
                 for y in range(self.n_rows)
-                if self.small_tiles[start_x + x][start_y + y] is None
+                if self.subtiles[start_x + x][start_y + y] is None
             ])
 
         return empty
@@ -379,7 +380,7 @@ class Board(object):
         """Set the value of the tile at coordinates to given piece."""
         if force or coords in self.allowed_moves:
             if value in self.pieces:
-                self.small_tiles[coords[0]][coords[1]] = value
+                self.subtiles[coords[0]][coords[1]] = value
             else:
                 raise TypeError("Value should be one of the board's pieces.")
 
