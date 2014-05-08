@@ -239,7 +239,7 @@ class Board(object):
             logging.info('{} won megatile {}'.format(last_piece, area_coords))
 
             # Didn't feel like writing a loop for this... am I lazy yet?
-            realify = lambda line: [c + (self.n_rows * area_coords[i]) for i, c in enumerate(line)]
+            realify = lambda coords: [c + (self.n_rows * area_coords[i]) for i, c in enumerate(coords)]
             real_line = tuple(map(realify, winning_line))
 
             # Add points for line drawing from/to middle of subtiles.
@@ -252,6 +252,12 @@ class Board(object):
 
             line = [start, end]
             self.winner_lines.append(line)
+
+            # Highlight megatile
+            for x in range(3):
+                for y in range(3):
+                    coords = realify([x, y])
+                    self.add_highlight(coords, last_piece.color + (100,))
 
             #for c in real_line:
             #    self.add_highlight(c, last_piece.color + (190,))
