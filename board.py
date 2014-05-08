@@ -113,6 +113,7 @@ class Board(object):
         self.outer_size = self.inner_size + margin * 2
 
         self.highlights = []
+        self.winner_lines = []
 
         self.style = style
         self.reset()
@@ -193,6 +194,11 @@ class Board(object):
                 pygame.draw.line(self.surface, self.style['big-border-color'],
                                  line[0], line[1], self.line_thickness * 2)
 
+        for line in self.winner_lines:
+            pygame.draw.line(self.highlight_surf, (0, 0, 0, 150), line[0], line[1], 10)
+            pygame.draw.circle(self.highlight_surf, (0, 0, 0, 150), line[0], 5, 0)
+            pygame.draw.circle(self.highlight_surf, (0, 0, 0, 150), line[1], 5, 0)
+
         self.surface.blit(self.highlight_surf, (0, 0))
         self.outer_surface.blit(self.surface, [self.margin]*2)
 
@@ -230,9 +236,26 @@ class Board(object):
 
         has_won, area_coords, winning_line = self.check_winner_megatile(last_piece, last_move)
         if has_won:
-            print(area_coords, winning_line)
-            # TODO: highlight megatile and winning line
             logging.info('{} won megatile {}'.format(last_piece, area_coords))
+
+            # Didn't feel like writing a loop for this... am I lazy yet?
+            realify = lambda line: [c + (self.n_rows * area_coords[i]) for i, c in enumerate(line)]
+            real_line = tuple(map(realify, winning_line))
+
+            # Add points for line drawing from/to middle of subtiles.
+            start = self.coords_to_pos(real_line[0])
+            end = self.coords_to_pos(real_line[-1])
+
+            half_tile = int(self.tile_size/2)
+            start = start[0] + half_tile, start[1] + half_tile
+            end = end[0] + half_tile, end[1] + half_tile
+
+            line = [start, end]
+            self.winner_lines.append(line)
+
+            #for c in real_line:
+            #    self.add_highlight(c, last_piece.color + (190,))
+
             self.megatiles[area_coords[0]][area_coords[1]] = last_piece
             won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.megatiles)
             if won_game:
@@ -320,7 +343,9 @@ class Board(object):
                     has_won = False
                     break
             if has_won:
-                winning_coords = coords
+                winning_coords = []
+                for co in coords:
+                    winning_coords.append([co[0] % self.n_rows, co[1] % self.n_rows])
                 break
         return has_won, winning_coords
 
