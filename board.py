@@ -113,7 +113,8 @@ class Board(object):
         self.outer_size = self.inner_size + margin * 2
 
         self.highlights = []
-        self.winner_lines = []
+        self.winning_lines = []
+        self.winning_player = None
 
         self.style = style
         self.reset()
@@ -149,8 +150,11 @@ class Board(object):
         """Reset the board to play a game from the start."""
         self.subtiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
         self.megatiles = [[None]*self.n_rows    for i in range(self.n_rows)]
-        self.winning_lines = []
         self.allowed_moves = []
+
+        self.highlights = []
+        self.winning_lines = []
+        self.winning_player = None
         for x in range(self.n_rows**2):
             self.allowed_moves.extend([(x, y) for y in range(self.n_rows**2)])
         self.turn = 0
@@ -194,7 +198,7 @@ class Board(object):
                 pygame.draw.line(self.surface, self.style['big-border-color'],
                                  line[0], line[1], self.line_thickness * 2)
 
-        for line in self.winner_lines:
+        for line in self.winning_lines:
             pygame.draw.line(self.highlight_surf, (0, 0, 0, 150), line[0], line[1], 10)
             pygame.draw.circle(self.highlight_surf, (0, 0, 0, 150), line[0], 5, 0)
             pygame.draw.circle(self.highlight_surf, (0, 0, 0, 150), line[1], 5, 0)
@@ -251,7 +255,7 @@ class Board(object):
             end = end[0] + half_tile, end[1] + half_tile
 
             line = [start, end]
-            self.winner_lines.append(line)
+            self.winning_lines.append(line)
 
             # Highlight megatile
             for x in range(3):
@@ -360,9 +364,7 @@ class Board(object):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.pieces[self.turn]
         if self.set_tile(coords, piece):
-            winning_player = self.find_and_highlight_winner(piece, coords)
-            if winning_player is not None:
-                self.end_of_game(winning_player)
+            self.winning_player = self.find_and_highlight_winner(piece, coords)
             self.switch_turns()
             self.update_allowed_moves(coords)
 
@@ -372,11 +374,6 @@ class Board(object):
             self.draw_highlights()
             return True
         return False
-
-
-    def end_of_game(self, winning_player):
-        """Ends the game. Shows options for another game or exit."""
-        ...
 
 
     def update_allowed_moves(self, last_move):
