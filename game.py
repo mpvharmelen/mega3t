@@ -138,6 +138,7 @@ while not quit:
 
         if b.winning_player is not None:
             end = True
+            b.del_highlights(color=b.style['allowed-moves-color'])
             b.draw_highlights()
             b.draw_board()
 
