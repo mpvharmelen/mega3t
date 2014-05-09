@@ -85,7 +85,7 @@ turn_text = draw_turn(turn_text, b.get_turn_text())
 # Main loop
 highlight = None
 quit = False
-end = False
+end_of_game = False
 clock = pygame.time.Clock()
 while not quit:
     for event in pygame.event.get():
@@ -94,7 +94,7 @@ while not quit:
             break
 
         elif event.type == MOUSEMOTION:
-            if not end:
+            if not end_of_game:
                 # Give the tile under the cursor a grey highlight.
                 pos = b.pos_in_board(event.pos)
 
@@ -111,7 +111,7 @@ while not quit:
                 b.draw_highlights()
 
         elif event.type == MOUSEBUTTONUP:
-            if not end:
+            if not end_of_game:
                 # If we're clicking on the board somewhere, make a move.
                 pos = b.pos_in_board(event.pos)
                 if pos:
@@ -122,7 +122,7 @@ while not quit:
                 break
             if restart_rect.collidepoint(event.pos):
                 b.reset()
-                end = False
+                end_of_game = False
                 b.draw_highlights()
                 b.draw_board()
 
@@ -132,12 +132,12 @@ while not quit:
                 break
             if event.key == K_r:
                 b.reset()
-                end = False
+                end_of_game = False
                 b.draw_highlights()
                 b.draw_board()
 
         if b.winning_player is not None:
-            end = True
+            end_of_game = True
             b.del_highlights(color=b.style['allowed-moves-color'])
             b.draw_highlights()
             b.draw_board()
