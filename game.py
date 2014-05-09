@@ -4,9 +4,8 @@ from pygame.locals import *
 import board
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.debug('test')
 
 # Constants
 TILE_SIZE = 55
@@ -81,6 +80,15 @@ def draw_turn(turn_text, turn_str):
     window.blit(turn_text, (b.get_size(), above))
     return turn_text
 
+def reset(board, turn_text):
+    board.reset()
+    turn_text = draw_turn(turn_text, b.get_turn_text())
+    logger.debug('Turn text: {}'.format(board.get_turn_text()))
+    board.draw_highlights()
+    board.draw_board()
+    return False, turn_text
+
+
 # Initialize board graphics, start game.
 b.pygame_init()
 window.blit(b.outer_surface, (0, 0))
@@ -126,21 +134,14 @@ while not quit:
                 quit = True
                 break
             if restart_rect.collidepoint(event.pos):
-                b.reset()
-                end_of_game = False
-                logger.debug(b.get_turn_text())
-                b.draw_highlights()
-                b.draw_board()
+                end_of_game, turn_text = reset(b, turn_text)
 
         elif event.type == KEYUP:
             if event.key == K_q:
                 quit = True
                 break
             if event.key == K_r:
-                b.reset()
-                end_of_game = False
-                b.draw_highlights()
-                b.draw_board()
+                end_of_game, turn_text = reset(b, turn_text)
 
         if b.winning_player is not None:
             end_of_game = True
