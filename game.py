@@ -2,6 +2,11 @@ import pygame, sys
 from pygame.locals import *
 
 import board
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.debug('test')
 
 # Constants
 TILE_SIZE = 55
@@ -123,6 +128,7 @@ while not quit:
             if restart_rect.collidepoint(event.pos):
                 b.reset()
                 end_of_game = False
+                logger.debug(b.get_turn_text())
                 b.draw_highlights()
                 b.draw_board()
 
