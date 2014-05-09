@@ -379,16 +379,21 @@ class Board(object):
     def update_allowed_moves(self, last_move):
         self.allowed_moves = []
         big_x, big_y = last_move[0] % self.n_rows, last_move[1] % self.n_rows
-        if self.megatiles[big_x][big_y] is not None:
-            # This megatile was occupied >> play anywhere
-            for x in range(self.n_rows):
-                for y in range(self.n_rows):
-                    if self.megatiles[x][y] is None:
-                        allowed_moves = self.get_empty_subtiles((x, y))
-                        self.allowed_moves.extend(allowed_moves)
-        else:
+        if self.megatiles[big_x][big_y] is None:
             # Play withing this megatile
             self.allowed_moves = self.get_empty_subtiles((big_x, big_y))
+            if self.allowed_moves:
+                # There are allowed moves
+                return
+
+        # This megatile was occupied or
+        # There were no allowed moves
+        # >> play anywhere
+        for x in range(self.n_rows):
+            for y in range(self.n_rows):
+                if self.megatiles[x][y] is None:
+                    allowed_moves = self.get_empty_subtiles((x, y))
+                    self.allowed_moves.extend(allowed_moves)
 
     def get_empty_subtiles(self, big_coords):
         empty = []
