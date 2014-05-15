@@ -179,8 +179,8 @@ if __name__ == '__main__':
     update_display(window, b)
 
     # Initialize main loop
-    highlight = None
     quit = False
+    force_move = FORCE_MOVE
     clock = pygame.time.Clock()
 
     # Main loop
@@ -224,9 +224,15 @@ if __name__ == '__main__':
                 # If we're clicking on the board somewhere, make a move.
                 pos = b.pos_in_board(event.pos)
                 if pos:
-                    if b.make_a_move(b.pos_to_coords(pos), FORCE_MOVE):
+                    if b.make_a_move(b.pos_to_coords(pos), force_move):
                         turn_rect = draw_turn(window, font,
                                               b.get_turn_text(), rect=turn_rect)
+
+            elif event.type == pygame.KEYUP:
+                if FORCE_MOVE and event.key == pygame.K_f:
+                    force_move = not force_move
+                    logging.info("Force move: {}".format(force_move))
+
 
         if b.game_over:
             b.del_highlights(color=b.style['allowed-moves-color'])
