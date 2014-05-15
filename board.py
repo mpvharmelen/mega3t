@@ -113,10 +113,6 @@ class Board(object):
         self.inner_size = n_rows**2 * self.tile_line_size
         self.outer_size = self.inner_size + margin * 2
 
-        self.highlights = []
-        self.winning_lines = []
-        self.winning_player = None
-
         self.style = style
         self.reset()
 
@@ -149,13 +145,13 @@ class Board(object):
 
     def reset(self):
         """Reset the board to play a game from the start."""
-        self.subtiles = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
+        self.subtiles  = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
         self.megatiles = [[None]*self.n_rows    for i in range(self.n_rows)]
         self.allowed_moves = []
 
         self.highlights = []
         self.winning_lines = []
-        self.winning_player = None
+        self.game_over = False
         for x in range(self.n_rows**2):
             self.allowed_moves.extend([(x, y) for y in range(self.n_rows**2)])
         self.turn = 0
@@ -264,16 +260,13 @@ class Board(object):
                     coords = realify([x, y])
                     self.add_highlight(coords, last_piece.color + (100,))
 
-            #for c in real_line:
-            #    self.add_highlight(c, last_piece.color + (190,))
-
             self.megatiles[area_coords[0]][area_coords[1]] = last_piece
             won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.megatiles)
             if won_game:
                 logger.info('{} won the game!'.format(last_piece))
                 # TODO: highlight big winning line
-                return last_piece
-        return None
+                return True
+        return False
 
 
     def check_winner_megatile(self, last_piece, last_move):
@@ -365,7 +358,9 @@ class Board(object):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.pieces[self.turn]
         if self.set_tile(coords, piece):
-            self.winning_player = self.find_and_highlight_winner(piece, coords)
+            if self.find_and_highlight_winner(piece, coords):
+                self.game_over = True
+                return True
             self.switch_turns()
             self.update_allowed_moves(coords)
 

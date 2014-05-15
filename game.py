@@ -1,5 +1,4 @@
 import pygame, sys
-from pygame.locals import *
 
 import board
 import logging
@@ -8,17 +7,32 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Constants
-TILE_SIZE = 55
-LINE_THICKNESS = 1
-MARGIN = 20
+PROGRAM_NAME = 'Mega3T'
+TURN_TEXT = 'Turn: '
+GAME_OVER_TEXT = "GAME OVER"
+
 BACKGROUND_COLOR = (255, 255, 255)
 TEXT_COLOR = (0, 0, 0)
 CROSS_COLOR = (0, 0, 255)
 NOUGHT_COLOR = (0, 155, 0)
-PROGRAM_NAME = 'Mega3T'
+
 FONT = 'courier new'
 FONT_SIZE = 16
+TITLE_SIZE = 21
+ANTI_ALIAS = False
+
+SIDE_PANEL_SIZE = 160
+TILE_SIZE = 55
+LINE_THICKNESS = 1
+MARGIN = 20
 TPS = 50
+
+BUTTON_MARGIN = 2
+BUTTON_POSITION = 2 * MARGIN
+RESET_KEY = pygame.K_r
+RESET_BUTTON_TEXT = "[r]estart"
+QUIT_KEY = pygame.K_q
+QUIT_BUTTON_TEXT = "[q]uit"
 
 BOARD_STYLE = {
     'background-color'  :   BACKGROUND_COLOR,
@@ -31,131 +45,195 @@ BOARD_STYLE = {
     'text-color'        :   TEXT_COLOR
 }
 
-# Initialize board instance.
-b = board.Board(
-        [board.Cross(CROSS_COLOR), board.Nought(NOUGHT_COLOR)],
-        TILE_SIZE,
-        LINE_THICKNESS,
-        MARGIN,
-        BOARD_STYLE
-    )
+def setup_display(program_name):
+    """Set up PyGame display."""
+    pygame.init()
+    pygame.display.set_caption(program_name)
 
-# Set up PyGame display.
-window_size = (b.get_size() + 160, b.get_size())
-pygame.init()
-window = pygame.display.set_mode(window_size)
-window.fill(BACKGROUND_COLOR)
-pygame.display.set_caption(PROGRAM_NAME)
+def setup_window(board_size, side_panel_size, background_color):
+    """Create window."""
+    window_size = (board_size + side_panel_size, board_size)
+    window = pygame.display.set_mode(window_size)
+    window.fill(background_color)
+    return window
 
-# Render and blit title, and turn.
-font = pygame.font.Font(pygame.font.match_font(FONT), FONT_SIZE)
-bold = pygame.font.Font(pygame.font.match_font(FONT, bold=True), 21)
+def draw_title(window, font, text, position, color=TEXT_COLOR,
+               anti_alias=ANTI_ALIAS):
+    """Render and blit title."""
+    title = font.render(text, anti_alias, color)
+    window.blit(title, position)
+    return title.get_rect()
 
-title = bold.render(PROGRAM_NAME, False, TEXT_COLOR)
-window.blit(title, (b.get_size(), MARGIN))
 
-quit = font.render("[q]uit", False, TEXT_COLOR)
-quit_pos = (b.get_size(), b.get_size() - 2 * MARGIN)
-window.blit(quit, quit_pos)
-quit_rect = quit.get_rect()
-quit_rect.topleft = quit_pos
-pygame.draw.rect(window, (0, 0, 0), quit_rect, 1)
+def draw_button(window, font, text, position, line_thickness=LINE_THICKNESS,
+                color=TEXT_COLOR, anti_alias=ANTI_ALIAS):
+    """Draw and return a rectangle with text in it."""
+    surface = font.render(text, anti_alias, color)
+    rect = surface.get_rect()
+    pygame.draw.rect(surface, color, rect, line_thickness)
+    window.blit(surface, position)
+    rect.topleft = position
+    return rect
 
-restart = font.render("[r]estart", False, TEXT_COLOR)
-restart_pos = (b.get_size() + quit.get_rect().width + 2, b.get_size() - 2 * MARGIN)
-window.blit(restart, restart_pos)
-restart_rect = restart.get_rect()
-restart_rect.topleft = restart_pos
-pygame.draw.rect(window, (0, 0, 0), restart_rect, 1)
-
-turn_text = font.render('', False, TEXT_COLOR)
-def draw_turn(turn_text, turn_str):
+def draw_turn(window, font, text,
+              pos=None, rect=None,
+              bg_color=BACKGROUND_COLOR, text_color=TEXT_COLOR,
+              anti_alias=ANTI_ALIAS, info_text=TURN_TEXT):
     """Override the turn text to show who's turn it is."""
-    # Draw a white rectangle over the old text, then write a new text!
-    above = MARGIN + title.get_rect().height
-    override_rect = pygame.Rect((b.get_size(), above), turn_text.get_rect().size)
-    pygame.draw.rect(window, BACKGROUND_COLOR, override_rect)
-    turn_str = 'Turn: ' + turn_str
-    turn_text = font.render(turn_str, False, TEXT_COLOR)
-    window.blit(turn_text, (b.get_size(), above))
-    return turn_text
+    if rect:
+        # Remove old text
+        window.fill(bg_color, rect)
+        pos = pos or rect.topleft
+        logger.debug('Old surface blanked.')
 
-def reset(board, turn_text):
+    # Write new text
+    logger.debug('Turn text: ' + text)
+    turn_str = info_text + text
+    new_surface = font.render(turn_str, anti_alias, text_color)
+    window.blit(new_surface, pos)
+    return new_surface.get_rect(topleft=pos)
+
+def draw_game_over(window, font, text, pos, text_color=TEXT_COLOR,
+                   anti_alias=ANTI_ALIAS):
+    """Draw game over text."""
+    surface = font.render(text, anti_alias, text_color)
+    window.blit(surface, pos)
+    return surface.get_rect(topleft=pos)
+
+def remove_game_over(window, rect, bg_color=BACKGROUND_COLOR):
+    """Remove game over text."""
+    window.fill(bg_color, rect)
+
+def reset(window, font, board, turn_rect, game_over_rect):
+    """Reset board and draw turn text."""
+    logger.info('Reset')
     board.reset()
-    turn_text = draw_turn(turn_text, b.get_turn_text())
-    logger.debug('Turn text: {}'.format(board.get_turn_text()))
+    turn_rect = draw_turn(window, font, board.get_turn_text(), rect=turn_rect)
     board.draw_highlights()
-    board.draw_board()
-    return False, turn_text
+    if game_over_rect is not None:
+        remove_game_over(window, game_over_rect)
+    return turn_rect
 
+def update_display(window, board, position=(0,0)):
+    """Update display with boad state."""
+    window.blit(board.outer_surface, position)
+    pygame.display.update()
 
-# Initialize board graphics, start game.
-b.pygame_init()
-window.blit(b.outer_surface, (0, 0))
-pygame.display.update()
-turn_text = draw_turn(turn_text, b.get_turn_text())
+def exit():
+    """Exit program."""
+    logger.info('Exit')
+    pygame.quit()
+    sys.exit()
 
-# Main loop
-highlight = None
-quit = False
-end_of_game = False
-clock = pygame.time.Clock()
-while not quit:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            quit = True
-            break
+if __name__ == '__main__':
+    # Initialize Pygame
+    setup_display(PROGRAM_NAME)
 
-        elif event.type == MOUSEMOTION:
-            if not end_of_game:
-                # Give the tile under the cursor a grey highlight.
-                pos = b.pos_in_board(event.pos)
+    # Initialize board instance.
+    b = board.Board(
+            [board.Cross(CROSS_COLOR), board.Nought(NOUGHT_COLOR)],
+            TILE_SIZE,
+            LINE_THICKNESS,
+            MARGIN,
+            BOARD_STYLE
+        )
 
-                if pos and b.pos_to_coords(pos) in b.allowed_moves:
-                    # Remove the old highlighted tile and replace it by this one.
-                    b.del_highlights(highlight, BOARD_STYLE['highlight-color'])
-                    highlight = b.pos_to_coords(pos)
-                    b.add_highlight(highlight)
+    # We're assuming the board is square, so board_size is just an int.
+    board_size = b.get_size()
 
-                # Or just remove it if the cursor is outside the board.
-                else:
-                    b.del_highlights(highlight, BOARD_STYLE['highlight-color'])
-                    highlight = None
-                b.draw_highlights()
+    # Initialize window
+    window = setup_window(board_size, SIDE_PANEL_SIZE, BACKGROUND_COLOR)
 
-        elif event.type == MOUSEBUTTONUP:
-            if not end_of_game:
+    # Draw title
+    title_font = pygame.font.Font(pygame.font.match_font(FONT, bold=True), TITLE_SIZE)
+    title_pos = (board_size, MARGIN)
+    title_rect = draw_title(window, title_font, PROGRAM_NAME, title_pos)
+    del title_pos
+
+    # Draw reset button
+    font = pygame.font.Font(pygame.font.match_font(FONT), FONT_SIZE)
+    button_y_pos = board_size - BUTTON_POSITION
+    reset_pos = (board_size, button_y_pos)
+    reset_rect = draw_button(window, font, RESET_BUTTON_TEXT, reset_pos)
+    del reset_pos
+
+    # Draw quit button
+    quit_pos = (board_size + reset_rect.width + BUTTON_MARGIN, button_y_pos)
+    quit_rect = draw_button(window, font, QUIT_BUTTON_TEXT, quit_pos)
+    del quit_pos, button_y_pos
+
+    # Draw turn text
+    turn_pos = (board_size, MARGIN + title_rect.height)
+    turn_rect = draw_turn(window, font, b.get_turn_text(), turn_pos)
+    del turn_pos
+
+    # Initialize game over text
+    game_over_pos = MARGIN * 2 + title_rect.height + turn_rect.height
+    game_over_pos = (board_size, game_over_pos)
+    game_over_rect = None
+
+    # Initialize board graphics
+    b.pygame_init()
+    update_display(window, b)
+
+    # Initialize main loop
+    highlight = None
+    quit = False
+    clock = pygame.time.Clock()
+
+    # Main loop
+    while not quit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT\
+               or \
+              (event.type == pygame.MOUSEBUTTONUP and
+               quit_rect.collidepoint(event.pos))\
+               or \
+              (event.type == pygame.KEYUP and
+               event.key == QUIT_KEY):
+                quit = True
+                break
+
+            elif event.type == pygame.MOUSEMOTION:
+                if not b.game_over:
+                    # Give the tile under the cursor a highlight.
+                    # First remove the old highlighted tile
+                    b.del_highlights(color=BOARD_STYLE['highlight-color'])
+
+                    # Add new highlight
+                    pos = b.pos_in_board(event.pos)
+                    if pos:
+                        coords = b.pos_to_coords(pos)
+                        if coords in b.allowed_moves:
+                            b.add_highlight(coords)
+
+                    # Draw new highlights
+                    b.draw_highlights()
+
+            elif (event.type == pygame.MOUSEBUTTONUP and
+                  reset_rect.collidepoint(event.pos))\
+                 or \
+                 (event.type == pygame.KEYUP and
+                  event.key == RESET_KEY):
+                    turn_rect = reset(window, font, b, turn_rect, game_over_rect)
+                    game_over_rect = None
+
+            elif event.type == pygame.MOUSEBUTTONUP and not b.game_over:
                 # If we're clicking on the board somewhere, make a move.
                 pos = b.pos_in_board(event.pos)
                 if pos:
                     if b.make_a_move(b.pos_to_coords(pos)):
-                        turn_text = draw_turn(turn_text, b.get_turn_text())
-            if quit_rect.collidepoint(event.pos):
-                quit = True
-                break
-            if restart_rect.collidepoint(event.pos):
-                end_of_game, turn_text = reset(b, turn_text)
+                        turn_rect = draw_turn(window, font,
+                                              b.get_turn_text(), rect=turn_rect)
 
-        elif event.type == KEYUP:
-            if event.key == K_q:
-                quit = True
-                break
-            if event.key == K_r:
-                end_of_game, turn_text = reset(b, turn_text)
-
-        if b.winning_player is not None:
-            end_of_game = True
+        if b.game_over:
             b.del_highlights(color=b.style['allowed-moves-color'])
             b.draw_highlights()
-            b.draw_board()
 
-            game_over = bold.render("GAME OVER", False, TEXT_COLOR)
-            above = MARGIN*2 + title.get_rect().height + turn_text.get_rect().height
-            window.blit(game_over, (b.get_size(), above))
+            game_over_rect = draw_game_over(window, title_font,
+                                            GAME_OVER_TEXT, game_over_pos)
 
-    window.blit(b.outer_surface, (0, 0))
-    pygame.display.update()
-    clock.tick(TPS)
+        update_display(window, b)
+        clock.tick(TPS)
 
-pygame.quit()
-sys.exit()
+    exit()
