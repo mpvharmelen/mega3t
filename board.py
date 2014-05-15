@@ -196,9 +196,20 @@ class Board(object):
                                  line[0], line[1], self.line_thickness * 2)
 
         for line in self.winning_lines:
-            pygame.draw.line(self.highlight_surf, (0, 0, 0, 150), line[0], line[1], 10)
-            pygame.draw.circle(self.highlight_surf, (0, 0, 0, 150), line[0], 5, 0)
-            pygame.draw.circle(self.highlight_surf, (0, 0, 0, 150), line[1], 5, 0)
+            pygame.draw.line(
+                self.highlight_surf,
+                self.style['winning-line-color'],
+                line[0],
+                line[1],
+                self.style['winning-line-thickness']
+            )
+            for end in line:
+                pygame.draw.circle(self.highlight_surf,
+                    self.style['winning-line-color'],
+                    end,
+                    self.style['winning-line-thickness'] // 2,
+                    0
+                )
 
         self.surface.blit(self.highlight_surf, (0, 0))
         self.outer_surface.blit(self.surface, [self.margin]*2)
@@ -243,27 +254,21 @@ class Board(object):
             realify = lambda coords: [c + (self.n_rows * area_coords[i]) for i, c in enumerate(coords)]
             real_line = tuple(map(realify, winning_line))
 
-            # Add points for line drawing from/to middle of subtiles.
-            start = self.coords_to_pos(real_line[0])
-            end = self.coords_to_pos(real_line[-1])
-
-            half_tile = int(self.tile_size/2)
-            start = start[0] + half_tile, start[1] + half_tile
-            end = end[0] + half_tile, end[1] + half_tile
-
-            line = [start, end]
-            self.winning_lines.append(line)
+            self.draw_line(real_line)
 
             # Highlight megatile
             for x in range(3):
                 for y in range(3):
                     coords = realify([x, y])
-                    self.add_highlight(coords, last_piece.color + (100,))
+                    self.add_highlight(coords, last_piece.color + (self.style['winning-highlight-alpha'],))
 
             self.megatiles[area_coords[0]][area_coords[1]] = last_piece
             won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.megatiles)
             if won_game:
                 logger.info('{} won the game!'.format(last_piece))
+                realify = lambda coords: [int((c + 0.5) * self.n_rows) for c in coords]
+                big_line = tuple(map(realify, big_winning_line))
+                self.draw_line(big_line)
                 # TODO: highlight big winning line
                 return True
         return False
@@ -301,7 +306,7 @@ class Board(object):
 
     def check_has_line(self, last_piece, last_move, grid):
         """
-        Check if the last move was a winning won.
+        Check if the last move was a winning one.
 
         obj.check_has_line(last_move, grid) -> (has_won, winning_coords)
         """
@@ -417,6 +422,18 @@ class Board(object):
             return True
         return False
 
+    def draw_line(self, line):
+        """Draw a line from line[0] to line[-1]."""
+        # Add points for line drawing from/to middle of subtiles.
+        start = self.coords_to_pos(line[0])
+        end = self.coords_to_pos(line[-1])
+
+        half_tile = int(self.tile_size/2)
+        start = start[0] + half_tile, start[1] + half_tile
+        end = end[0] + half_tile, end[1] + half_tile
+
+        line = [start, end]
+        self.winning_lines.append(line)
 
     def draw_highlights(self):
         """Draw the highlights to the surface."""
