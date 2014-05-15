@@ -7,6 +7,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Constants
+FORCE_MOVE = True
+
 PROGRAM_NAME = 'Mega3T'
 TURN_TEXT = 'Turn: '
 GAME_OVER_TEXT = "GAME OVER"
@@ -222,7 +224,7 @@ if __name__ == '__main__':
                 # If we're clicking on the board somewhere, make a move.
                 pos = b.pos_in_board(event.pos)
                 if pos:
-                    if b.make_a_move(b.pos_to_coords(pos)):
+                    if b.make_a_move(b.pos_to_coords(pos), FORCE_MOVE):
                         turn_rect = draw_turn(window, font,
                                               b.get_turn_text(), rect=turn_rect)
 

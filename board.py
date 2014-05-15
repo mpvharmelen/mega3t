@@ -354,10 +354,10 @@ class Board(object):
         return has_won, winning_coords
 
 
-    def make_a_move(self, coords):
+    def make_a_move(self, coords, forced=False):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.pieces[self.turn]
-        if self.set_tile(coords, piece):
+        if self.set_tile(coords, piece, forced):
             if self.find_and_highlight_winner(piece, coords):
                 self.game_over = True
                 return True
@@ -405,9 +405,9 @@ class Board(object):
         return empty
 
 
-    def set_tile(self, coords, value, force=False):
+    def set_tile(self, coords, value, forced=False):
         """Set the value of the tile at coordinates to given piece."""
-        if force or coords in self.allowed_moves:
+        if forced or coords in self.allowed_moves:
             if value in self.pieces:
                 self.subtiles[coords[0]][coords[1]] = value
             else:
