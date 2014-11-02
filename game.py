@@ -234,7 +234,7 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYUP:
                 if FORCE_MOVE and event.key == pygame.K_f:
                     force_move = not force_move
-                    logging.info("Force move: {}".format(force_move))
+                    logger.info("Force move: {}".format(force_move))
 
 
         if b.game_over:
