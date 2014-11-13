@@ -2,6 +2,7 @@ import pygame, sys
 
 import board
 import logging
+from constants import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
