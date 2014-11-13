@@ -1,3 +1,5 @@
+from pygame import Color, K_r, K_q
+
 # Constants
 PROGRAM_NAME = 'Mega3T'
 TURN_TEXT = 'Turn: '
@@ -21,20 +23,20 @@ TPS = 50
 
 BUTTON_MARGIN = 2
 BUTTON_POSITION = 2 * MARGIN
-RESET_KEY = pygame.K_r
+RESET_KEY = K_r
 RESET_BUTTON_TEXT = "[r]estart"
-QUIT_KEY = pygame.K_q
+QUIT_KEY = K_q
 QUIT_BUTTON_TEXT = "[q]uit"
 
 BOARD_STYLE = {
     'background-color'       :  BACKGROUND_COLOR,
     'small-border-color'     :  (0, 0, 0),
     'big-border-color'       :  (255, 0, 0),
-    'highlight-color'        :  pygame.Color(0, 0, 0, 32),
+    'highlight-color'        :  Color(0, 0, 0, 32),
     'winning-line-color'     :  (0, 0, 0, 150),
     'winning-line-thickness' :  10,
     'winning-highlight-alpha':  100,
-    'allowed-moves-color'    :  pygame.Color(0, 255, 0, 32),
+    'allowed-moves-color'    :  Color(0, 255, 0, 32),
     'font-name'              :  FONT,
     'font-size'              :  FONT_SIZE,
     'text-color'             :  TEXT_COLOR
