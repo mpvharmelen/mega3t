@@ -1,3 +1,2 @@
-Mega3T requires:
-- Python 3.x
-- PyGame (1.9+?)
+# hg+http://bitbucket.org/pygame/pygame
+pygame==1.9.1
