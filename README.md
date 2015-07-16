@@ -140,3 +140,8 @@ arise and it becomes more chess-like.
 * [planned] Online multiplayer mode.
 * [planned] AI.
 * [who knows] Android app?
+
+### Dependencies
+
+* Python 3
+* Pygame (version?)
