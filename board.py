@@ -1,91 +1,29 @@
-import math
+import math, logging
 import pygame
-from pygame.locals import *
 
-import warnings
-import logging
+from pieces import Piece
+from config import BOARD_LOGGING_LEVEL
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-class Piece(object):
-    def __init__(self, name, abbr, color, thickness=2):
-        self.name = name
-        self.abbr = abbr
-        self.color = color
-        self.thickness = thickness
-
-    def __repr__(self):
-        return '{}'.format(self.abbr)
-
-    def draw(self, surface, pos, size):
-        """Draws the representation of a piece."""
-        raise NotImplemented('You must write this for each piece.')
+logger.setLevel(BOARD_LOGGING_LEVEL)
 
 
+class API(object):
+    """API for AI players."""
+    def __init__(self):
+        mutation_diff = []
 
-class Nought(Piece):
-    def __init__(self, color):
-        name = 'nought'
-        abbr = 'O'
-        self.size = 0.9
-        super(Nought, self).__init__(name, abbr, color)
+    def add_mutation(self, coords, piece):
+        self.mutations.append(tuple(coords, piece))
 
-        logger.debug('Nought.__init__')
-        logger.debug('{}, {}'.format(self.thickness, type(self.thickness)))
+    def get_mutation_diff(self):
+        out = mutation_diff.copy()
+        mutation_diff = []
+        return out
 
-
-    def draw(self, surface, pos, size):
-        """Draws the representation of a Nought."""
-        logger.debug('Nought.draw')
-        logger.debug('{}, {}, {}'.format('Surface', surface, type(surface)))
-        logger.debug('{}, {}, {}, {}'.format('Pos', pos, type(pos), [type(x) for x in pos]))
-        logger.debug('{}, {}, {}'.format('Size', size, type(size)))
-        logger.debug('{}, {}, {}'.format('Thickness', self.thickness, type(self.thickness)))
-
-        pos = (int(math.ceil(pos[0] + size/2)), int(math.ceil(pos[1] + size/2)))
-        pygame.draw.circle(
-            surface,
-            self.color,
-            pos,
-            int(size/2*self.size),
-            self.thickness
-        )
-
-class Cross(Piece):
-    def __init__(self, color):
-        name = 'cross'
-        abbr = 'X'
-        self.margin = 4
-        super(Cross, self).__init__(name, abbr, color)
-
-
-    def draw(self, surface, pos, size):
-        """Draws the representation of a Cross."""
-        logger.debug('Cross.draw')
-        logger.debug('{}, {}, {}'.format('Surface', surface, type(surface)))
-        logger.debug('{}, {}, {}, {}'.format('Pos', pos, type(pos), [type(x) for x in pos]))
-        logger.debug('{}, {}, {}'.format('Size', size, type(size)))
-        logger.debug('{}, {}, {}'.format('Thickness', self.thickness, type(self.thickness)))
-
-        pygame.draw.line(
-            surface,
-            self.color,
-            (pos[0]+self.margin, pos[1]+self.margin),
-            (pos[0]+size-self.margin, pos[1]+size-self.margin),
-            self.thickness
-        )
-        pygame.draw.line(
-            surface,
-            self.color,
-            (pos[0]+size-self.margin, pos[1]+self.margin),
-            (pos[0]+self.margin, pos[1]+size-self.margin),
-            self.thickness
-        )
-
-
-class Board(object):
+class Board(API):
     def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows=3):
+        super(Board, self).__init__()
         # Verify pieces
         self.pieces = []
         for piece in pieces:
@@ -97,7 +35,7 @@ class Board(object):
 
         # Calculate board size
         if not tile_size % 2:
-            warnings.warn('The style of the board is best with an odd tile_size.')
+            logger.warn('The style of the board is best with an odd tile_size.')
 
         self.tile_size = tile_size
         self.line_thickness = line_thickness
@@ -147,13 +85,14 @@ class Board(object):
         """Reset the board to play a game from the start."""
         self.subtiles  = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
         self.megatiles = [[None]*self.n_rows    for i in range(self.n_rows)]
+
         self.allowed_moves = []
+        for x in range(self.n_rows**2):
+            self.allowed_moves.extend([(x, y) for y in range(self.n_rows**2)])
 
         self.highlights = []
         self.winning_lines = []
         self.game_over = False
-        for x in range(self.n_rows**2):
-            self.allowed_moves.extend([(x, y) for y in range(self.n_rows**2)])
         self.turn = 0
 
 
@@ -361,7 +300,7 @@ class Board(object):
 
     def make_a_move(self, coords, forced=False):
         """Add piece of whoever's turn it is to the given coordinates."""
-        piece = self.pieces[self.turn]
+        piece = self.get_turn()
         if self.set_tile(coords, piece, forced):
             if self.find_and_highlight_winner(piece, coords):
                 self.game_over = True
@@ -486,5 +425,8 @@ class Board(object):
         return False
 
 
+    def get_turn(self):
+        return self.pieces[self.turn]
+
     def get_turn_text(self):
-        return str(self.pieces[self.turn])
+        return str(self.get_turn())
