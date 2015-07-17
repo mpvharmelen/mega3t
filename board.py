@@ -10,20 +10,20 @@ logger.setLevel(BOARD_LOGGING_LEVEL)
 
 class API(object):
     """API for AI players."""
-    def __init__(self):
-        mutation_diff = []
+    def __init__(self, ais):
+        self.mutations = {ai: [] for ai in ais}
 
     def add_mutation(self, coords, piece):
-        self.mutations.append(tuple(coords, piece))
+        for ai in self.mutations:
+            self.mutations[ai].append(tuple(coords, piece))
 
-    def get_mutation_diff(self):
-        out = mutation_diff.copy()
-        mutation_diff = []
+    def get_mutation_diff(self, ai):
+        out = self.mutations[ai]
+        self.mutations[ai] = []
         return out
 
 class Board(API):
     def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows=3):
-        super(Board, self).__init__()
         # Verify pieces
         self.pieces = []
         for piece in pieces:
@@ -32,6 +32,8 @@ class Board(API):
             else:
                 raise TypeError('All pieces must be an instance of '
                                 '(a subclass of) Piece.')
+
+        super(Board, self).__init__((p for p in pieces if p.is_AI))
 
         # Calculate board size
         if not tile_size % 2:
@@ -196,8 +198,8 @@ class Board(API):
             self.draw_line(real_line)
 
             # Highlight megatile
-            for x in range(3):
-                for y in range(3):
+            for x in range(self.n_rows):
+                for y in range(self.n_rows):
                     coords = realify([x, y])
                     self.add_highlight(coords, last_piece.color + (self.style['winning-highlight-alpha'],))
 
@@ -302,6 +304,7 @@ class Board(API):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.get_turn()
         if self.set_tile(coords, piece, forced):
+            self.add_mutation(coords, piece)
             if self.find_and_highlight_winner(piece, coords):
                 self.game_over = True
                 return True
