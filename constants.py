@@ -15,6 +15,7 @@ FONT_SIZE = 16
 TITLE_SIZE = 21
 ANTI_ALIAS = False
 
+N_ROWS = 3
 SIDE_PANEL_SIZE = 160
 TILE_SIZE = 55
 LINE_THICKNESS = 1
@@ -36,7 +37,7 @@ BOARD_STYLE = {
     'winning-line-color'     :  (0, 0, 0, 150),
     'winning-line-thickness' :  10,
     'winning-highlight-alpha':  100,
-    'allowed-moves-color'    :  Color(0, 255, 0, 32),
+    'allowed-moves-color'    :  Color(0, 255, 0, 90),
     'font-name'              :  FONT,
     'font-size'              :  FONT_SIZE,
     'text-color'             :  TEXT_COLOR
