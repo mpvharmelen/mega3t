@@ -7,23 +7,8 @@ from config import BOARD_LOGGING_LEVEL
 logger = logging.getLogger(__name__)
 logger.setLevel(BOARD_LOGGING_LEVEL)
 
-
-class API(object):
-    """API for AI players."""
-    def __init__(self, ais):
-        self.mutations = {ai: [] for ai in ais}
-
-    def add_mutation(self, coords, piece):
-        for ai in self.mutations:
-            self.mutations[ai].append(tuple(coords, piece))
-
-    def get_mutation_diff(self, ai):
-        out = self.mutations[ai]
-        self.mutations[ai] = []
-        return out
-
-class Board(API):
-    def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows=3):
+class Board(object):
+    def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows):
         # Verify pieces
         self.pieces = []
         for piece in pieces:
@@ -32,8 +17,6 @@ class Board(API):
             else:
                 raise TypeError('All pieces must be an instance of '
                                 '(a subclass of) Piece.')
-
-        super(Board, self).__init__((p for p in pieces if p.is_AI))
 
         # Calculate board size
         if not tile_size % 2:
@@ -157,7 +140,7 @@ class Board(API):
 
 
     def coords_to_pos(self, coords):
-        """Take coordinates (from 0 to 8) and turn them into pixel positions."""
+        """Take coordinates (from 0 to n_rows ** 2 - 1) and turn them into pixel positions."""
         logger.debug('Board.coords_to_pos')
         logger.debug('{}, {}, {}, {}'.format('Coords', coords, type(coords), [type(x) for x in coords]))
         x, y = coords
@@ -165,7 +148,7 @@ class Board(API):
 
 
     def pos_to_coords(self, pos):
-        """Take pixel positions and turn them into coordinates (from 0 to 8)."""
+        """Take pixel positions and turn them into coordinates (from 0 to n_rows ** 2 - 1)."""
         x, y = pos
         coords = (int(math.floor(x/self.tile_line_size)), int(math.floor(y/self.tile_line_size)))
         logger.debug('Board.pos_to_coords')
@@ -304,7 +287,6 @@ class Board(API):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.get_turn()
         if self.set_tile(coords, piece, forced):
-            self.add_mutation(coords, piece)
             if self.find_and_highlight_winner(piece, coords):
                 self.game_over = True
                 return True
@@ -358,7 +340,7 @@ class Board(API):
             if value in self.pieces:
                 self.subtiles[coords[0]][coords[1]] = value
             else:
-                raise TypeError("Value should be one of the board's pieces.")
+                raise ValueError("Value should be one of the board's pieces.")
 
             self.draw_board()
             return True
@@ -433,3 +415,31 @@ class Board(API):
 
     def get_turn_text(self):
         return str(self.get_turn())
+
+class AIBoard(Board):
+    """API for AI players."""
+    def __init__(self, *args, **kwargs):
+        super(AIBoard, self).__init__(*args, **kwargs)
+        self.mutations = {piece: [] for piece in self.pieces if piece.is_AI()}
+        for ai in self.mutations:
+            ai.save_board_info(self.n_rows, self.pieces)
+
+    def add_mutation(self, coords, piece):
+        for ai in self.mutations:
+            self.mutations[ai].append((coords, piece))
+
+    def get_mutations(self, ai):
+        if ai in self.mutations:
+            out = self.mutations[ai]
+            self.mutations[ai] = []
+            return out
+        else:
+            raise ValueError("{} not in known AIs".format(ai))
+
+    def make_a_move(self, coords, *args, **kwargs):
+        if super(AIBoard, self).make_a_move(coords, *args, **kwargs):
+            self.add_mutation(coords, self.get_turn())
+            return True
+        return False
+
+

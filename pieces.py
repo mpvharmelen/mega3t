@@ -4,29 +4,35 @@ from config import PIECES_LOGGING_LEVEL
 logger = logging.getLogger(__name__)
 logger.setLevel(PIECES_LOGGING_LEVEL)
 
+class AIMixin(object):
+    def save_board_info(self, n_rows, pieces):
+        """
+        Save the info of the board to the AI object, so it can be used for
+        the algorithm
+        """
+        return NotImplemented
+
+    def move(self, mutations):
+        """Make a move"""
+        return NotImplemented
+
+
 class Piece(object):
     def __init__(self, name, abbr, color, thickness=2):
         self.name = name
         self.abbr = abbr
         self.color = color
         self.thickness = thickness
-        self.is_AI = False
 
     def __repr__(self):
         return '{}'.format(self.abbr)
 
     def draw(self, surface, pos, size):
         """Draws the representation of a piece."""
-        raise NotImplemented('You must write this for each piece.')
-
-
-class AI(object):
-    def __init__(self, *args, **kwargs):
-        super(AI, self).__init__(*args, **kwargs)
-        self.is_AI = True
-
-    def move(self, mutations):
         return NotImplemented
+
+    def is_AI(self):
+        return isinstance(self, AIMixin)
 
 
 class Nought(Piece):
@@ -88,7 +94,3 @@ class Cross(Piece):
             (pos[0]+self.margin, pos[1]+size-self.margin),
             self.thickness
         )
-
-
-class NoughtAI(Nought, AI):
-    ...

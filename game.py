@@ -1,7 +1,7 @@
 import sys, logging, pygame
 
 import config
-import board
+from board import AIBoard as Board
 from constants import *
 
 logging.basicConfig(level=config.GAME_LOGGING_LEVEL)
@@ -94,12 +94,13 @@ if __name__ == '__main__':
     setup_display(PROGRAM_NAME)
 
     # Initialize board instance.
-    b = board.Board(
+    b = Board(
             config.get_pieces(),
             TILE_SIZE,
             LINE_THICKNESS,
             MARGIN,
-            BOARD_STYLE
+            BOARD_STYLE,
+            N_ROWS
         )
 
     # We're assuming the board is square, so board_size is just an int.
@@ -147,8 +148,15 @@ if __name__ == '__main__':
 
     # Main loop
     while not quit:
-        while b.get_turn().is_AI:
-            ...
+        # If it's an AI's turn, let it move
+        if b.get_turn().is_AI() and not b.game_over:
+            ai = b.get_turn()
+            if b.make_a_move(ai.move(b.get_mutations(ai), b.allowed_moves)):
+                turn_rect = draw_turn(window, font,
+                                      b.get_turn_text(), rect=turn_rect)
+            else:
+                logger.warn("{} made an illegal move".format(ai))
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT\
