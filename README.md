@@ -135,11 +135,15 @@ arise and it becomes more chess-like.
 * Shows a Mega3T board.
 * Allows for entering O's and X's.
 * Keeps track of whose turn it is.
-* [in progress] Enforce gameplay rules.
-* [planned] Show winner.
+* Enforce gameplay rules.
+* Show winner.
+* [in progress] AI.
 * [planned] Online multiplayer mode.
-* [planned] AI.
 * [who knows] Android app?
+
+### Todo
+
+* draw doesn't seem to be recognised
 
 ### Dependencies
 
