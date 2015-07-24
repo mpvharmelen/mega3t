@@ -3,7 +3,7 @@ from constants import *
 
 # Debugging configuration
 import logging
-FORCE_MOVE = True
+FORCE_MOVE = False
 GAME_LOGGING_LEVEL = logging.INFO
 BOARD_LOGGING_LEVEL = logging.INFO
 PIECES_LOGGING_LEVEL = logging.INFO
