@@ -161,6 +161,14 @@ class Board(object):
         self.turn = (self.turn + 1) % len(self.pieces)
 
 
+    def check_for_draw(self):
+        """Check if there is a draw and update the board accordingly"""
+        if len(self.allowed_moves):
+            return False
+        # If there are no allowed moves, there is a draw
+        logger.info('Draw!')
+        return True
+
     def find_and_highlight_winner(self, last_piece, last_move):
         """
         Check if someone won a megatile and maybe even the whole game!
@@ -287,13 +295,19 @@ class Board(object):
         """Add piece of whoever's turn it is to the given coordinates."""
         piece = self.get_turn()
         if self.set_tile(coords, piece, forced):
+            self.del_highlights(color=self.style['allowed-moves-color'])
+
             if self.find_and_highlight_winner(piece, coords):
                 self.game_over = True
                 return True
+
             self.switch_turns()
             self.update_allowed_moves(coords)
 
-            self.del_highlights(color=self.style['allowed-moves-color'])
+            if self.check_for_draw():
+                self.game_over = True
+                return True
+
             for move in self.allowed_moves:
                 self.add_highlight(move, self.style['allowed-moves-color'])
             self.draw_highlights()

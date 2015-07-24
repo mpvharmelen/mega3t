@@ -153,7 +153,7 @@ against a self made opponent.
 
 ### Todo
 
-* tied games don't seem to be recognised
+* nothing yet
 
 ### Dependencies
 
