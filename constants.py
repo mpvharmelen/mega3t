@@ -34,7 +34,7 @@ BOARD_STYLE = {
     'small-border-color'     :  (0, 0, 0),
     'big-border-color'       :  (255, 0, 0),
     'highlight-color'        :  Color(0, 0, 0, 32),
-    'winning-line-color'     :  (0, 0, 0, 150),
+    'winning-line-color'     :  Color(0, 0, 0, 150),
     'winning-line-thickness' :  10,
     'winning-highlight-alpha':  100,
     'allowed-moves-color'    :  Color(0, 255, 0, 90),
