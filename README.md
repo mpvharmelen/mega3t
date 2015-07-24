@@ -130,6 +130,16 @@ gameplay is almost entirely different from classic 3t, almost all the tricks
 you might've learned for that are useless here. A lot of new ways to play
 arise and it becomes more chess-like.
 
+### Creating your own AI
+
+To write your own AI subclass `pieces.Piece` and `pieces.AIMixin` (together,
+e.g. `class MasterMind(Piece, AIMixin):`). Implement a `draw` method or subclass
+an existing piece (together with the AIMixin) in stead. Implement
+`save_board_info` and `move` and add an instance of your newly created mind to
+the return value of `config.get_pieces`. If all went well, you can now play
+against a self made opponent.
+
+
 ### Features
 
 * Shows a Mega3T board.
@@ -137,13 +147,13 @@ arise and it becomes more chess-like.
 * Keeps track of whose turn it is.
 * Enforce gameplay rules.
 * Show winner.
-* [in progress] AI.
-* [planned] Online multiplayer mode.
+* AI.
+* [who knows] Online multiplayer mode?
 * [who knows] Android app?
 
 ### Todo
 
-* draw doesn't seem to be recognised
+* tied games don't seem to be recognised
 
 ### Dependencies
 
