@@ -1,4 +1,4 @@
-from pygame import Color, K_r, K_q
+from pygame import Color, K_r, K_q, K_f
 
 # Constants
 PROGRAM_NAME = 'Mega3T'
@@ -28,6 +28,7 @@ RESET_KEY = K_r
 RESET_BUTTON_TEXT = "[r]estart"
 QUIT_KEY = K_q
 QUIT_BUTTON_TEXT = "[q]uit"
+FORCE_KEY = K_f
 
 BOARD_STYLE = {
     'background-color'       :  BACKGROUND_COLOR,

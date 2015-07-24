@@ -202,7 +202,7 @@ if __name__ == '__main__':
                                               b.get_turn_text(), rect=turn_rect)
 
             elif event.type == pygame.KEYUP:
-                if config.FORCE_MOVE and event.key == pygame.K_f:
+                if config.FORCE_MOVE and event.key == FORCE_KEY:
                     force_move = not force_move
                     logger.info("Force move: {}".format(force_move))
 
