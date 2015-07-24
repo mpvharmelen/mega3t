@@ -105,7 +105,10 @@ class Board(object):
                 tile = self.subtiles[x][y]
                 pos = (pos[0] + self.line_thickness, pos[1] + self.line_thickness)
                 if tile is not None:
-                    tile.draw(self.surface, pos, self.tile_size)
+                    tile_surface = pygame.Surface([self.tile_size]*2)
+                    tile_surface.fill(self.style['background-color'])
+                    tile.draw(tile_surface)
+                    self.surface.blit(tile_surface, pos)
 
         # Now draw the four "big" lines on the board.
         for n in range(1, self.n_rows):

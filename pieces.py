@@ -41,10 +41,10 @@ class Piece(object):
     def __repr__(self):
         return '{}'.format(self.abbr)
 
-    def draw(self, surface, pos, size):
+    def draw(self, surface):
         """
-        Draw the representation of a piece on the given surface in a square of
-        size * size with its top left corner at pos.
+        Draw the representation of a piece on the given surface (which
+        represents a tile).
 
         The return value is ignored.
         """
@@ -65,15 +65,16 @@ class Nought(Piece):
         logger.debug('{}, {}'.format(self.thickness, type(self.thickness)))
 
 
-    def draw(self, surface, pos, size):
+    def draw(self, surface):
         """Draws the representation of a Nought."""
         logger.debug('Nought.draw')
         logger.debug('{}, {}, {}'.format('Surface', surface, type(surface)))
-        logger.debug('{}, {}, {}, {}'.format('Pos', pos, type(pos), [type(x) for x in pos]))
-        logger.debug('{}, {}, {}'.format('Size', size, type(size)))
         logger.debug('{}, {}, {}'.format('Thickness', self.thickness, type(self.thickness)))
 
-        pos = (int(math.ceil(pos[0] + size/2)), int(math.ceil(pos[1] + size/2)))
+        size = max(surface.get_size())
+        pos = (int(math.ceil(size/2)), int(math.ceil(size/2)))
+        logger.debug('{}, {}, {}'.format('Size', size, type(size)))
+        logger.debug('{}, {}, {}, {}'.format('Pos', pos, type(pos), [type(x) for x in pos]))
         pygame.draw.circle(
             surface,
             self.color,
@@ -91,26 +92,26 @@ class Cross(Piece):
         super(Cross, self).__init__(name, abbr, color)
 
 
-    def draw(self, surface, pos, size):
+    def draw(self, surface):
         """Draws the representation of a Cross."""
         logger.debug('Cross.draw')
         logger.debug('{}, {}, {}'.format('Surface', surface, type(surface)))
-        logger.debug('{}, {}, {}, {}'.format('Pos', pos, type(pos), [type(x) for x in pos]))
-        logger.debug('{}, {}, {}'.format('Size', size, type(size)))
         logger.debug('{}, {}, {}'.format('Thickness', self.thickness, type(self.thickness)))
 
+        # logger.debug('{}, {}, {}, {}'.format('Pos', pos, type(pos), [type(x) for x in pos]))
+        # logger.debug('{}, {}, {}'.format('Size', size, type(size)))
         pygame.draw.line(
             surface,
             self.color,
-            (pos[0]+self.margin, pos[1]+self.margin),
-            (pos[0]+size-self.margin, pos[1]+size-self.margin),
+            (self.margin, self.margin),
+            (surface.get_width()-self.margin, surface.get_height()-self.margin),
             self.thickness
         )
         pygame.draw.line(
             surface,
             self.color,
-            (pos[0]+size-self.margin, pos[1]+self.margin),
-            (pos[0]+self.margin, pos[1]+size-self.margin),
+            (surface.get_width()-self.margin, self.margin),
+            (self.margin, surface.get_height()-self.margin),
             self.thickness
         )
 
