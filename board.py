@@ -504,9 +504,7 @@ class PygameBoard(AIBoard, metaclass=InheritableDocstrings):
         """Highlight the tile at specified coordinates with a chosen color."""
         # Default to the style value.
         color = color or self.style['highlight-color']
-
-        # A tuple of the color because we don't know what we're getting.
-        self.highlights.append((coords, tuple(color)))
+        self.highlights.append((coords, color))
 
 
     def del_highlights(self, coords=None, color=None):

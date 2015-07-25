@@ -153,7 +153,6 @@ against a self made opponent.
 
 ### Todo
 
-* why tuple in add_highlight and why color=None?
 * Highlight last move
 
 ### Dependencies
