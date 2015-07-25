@@ -128,3 +128,74 @@ class NoughtAI(Nought, RandomAI):
 
 class CrossAI(Cross, RandomAI):
     pass
+
+class CountingAI(AIMixin):
+    """
+    Representation
+    ==============
+
+    Count number of pieces of all players in each megatile. Use the representation
+    of the megatile the AI should play in linked to the number of pieces in the
+    other megatiles as a key to learn.
+    E.g. (this is probably an illegal board)
+
+     | |  |  | |  |  | |
+    -+-+- | -+-+- | -+-+-
+    X| |X |  |O|  |  |O|
+    -+-+- | -+-+- | -+-+-
+     |X|  |  |X|  |  |O|
+          |       |
+    ------+-------+------
+          |       |
+    X| |  | O|O|X |  | |
+    -+-+- | -+-+- | -+-+-
+     | |X |  |X|O | O| |
+    -+-+- | -+-+- | -+-+-
+     | |  | O| |  |  | |
+          |       |
+    ------+-------+------
+          |+-----+|
+     | |  || | | ||  | |
+    -+-+- ||-+-+-|| -+-+-
+     | |  || |O| ||  | |
+    -+-+- ||-+-+-|| -+-+-
+     | |X ||X| | ||  |O|
+           +-----+    ^
+              ^       ^ O's last move
+              ^ X's next move
+
+    Will be represented something like:
+         |     |
+         |     |
+    3   0|1   1|0   2
+    -----+-----+-----
+         |     |
+         |  O  |
+    2   0|2   4|0   1
+    -----+-----+-----
+         |     |
+      X  |     |
+    1   0|1   1|0   1
+
+
+    Learning
+    ========
+
+    during the game:
+        If a board hasn't been encountered before, each of the nine cells will
+            get a certain initial value.
+        A weighted random choice is made between the cells
+            and is saved to the history of this game (i.e. a board with a choice
+            will be saved).
+
+    If the game ends in a victory:
+        all choices will be "rewarded" by increasing the value assigned to that
+        choice.
+    If the game end in a loss:
+        all choices will be "punished" by decreasing the value assigned to that
+        choice.
+    If the game is a draw:
+        I have no idea what works best yet.
+
+    """
+    ...
