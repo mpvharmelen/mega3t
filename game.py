@@ -79,7 +79,7 @@ def reset(window, font, board, turn_rect, game_over_rect):
     return turn_rect
 
 def update_display(window, board, position=(0,0)):
-    """Update display with boad state."""
+    """Update display with board state."""
     window.blit(board.outer_surface, position)
     pygame.display.update()
 
@@ -214,6 +214,7 @@ if __name__ == '__main__':
             game_over_rect = draw_game_over(window, title_font,
                                             GAME_OVER_TEXT, game_over_pos)
 
+        b.draw_board()
         update_display(window, b)
         clock.tick(TPS)
 

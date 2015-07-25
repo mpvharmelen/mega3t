@@ -497,8 +497,6 @@ class PygameBoard(AIBoard, metaclass=InheritableDocstrings):
             x, y = map(lambda i: i + self.line_thickness, self.coords_to_pos(coords))
             rect = pygame.Rect((x, y), (self.tile_size,)*2)
             pygame.draw.rect(self.highlight_surf, color, rect, 0)
-        self.draw_board()
-
 
     def add_highlight(self, coords, color=None):
         """Highlight the tile at specified coordinates with a chosen color."""
