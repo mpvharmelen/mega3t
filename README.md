@@ -153,7 +153,9 @@ against a self made opponent.
 
 ### Todo
 
-* nothing yet
+* why tuple in add_highlight and why color=None?
+* Make AI board higher than PygameBoard
+* Highlight last move
 
 ### Dependencies
 
