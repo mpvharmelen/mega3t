@@ -337,9 +337,8 @@ class PygameBoard(AIBoard, metaclass=InheritableDocstrings):
         self.highlight_surf = pygame.Surface([self.inner_size]*2, pygame.SRCALPHA)
         self.draw_board()
 
-
+    @copy_ancestor_docstring
     def reset(self):
-        """Reset the board to play a game from the start."""
         super(PygameBoard, self).reset()
         self.highlights = []
 
@@ -507,14 +506,14 @@ class PygameBoard(AIBoard, metaclass=InheritableDocstrings):
 
     def del_highlights(self, coords=None, color=None):
         """Delete all highlights that match the coords and/or color."""
-        new_hls = self.highlights[:]
+        new_hls = self.highlights.copy()
         n_deleted = 0
         for i, h in enumerate(self.highlights):
             h_coords, h_color = h
 
             # If coords are set, check those - same with color.
             if (coords is None or coords == h_coords) and \
-               (color is None or tuple(color) == h_color):
+               (color is None or tuple(color) == tuple(h_color)):
                 del new_hls[i - n_deleted]
                 n_deleted = n_deleted + 1
 
