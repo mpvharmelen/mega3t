@@ -117,11 +117,8 @@ class Cross(Piece):
 
 import random
 class RandomAI(AIMixin):
-    def __init__(self):
-        self.n_rows = None
-
     def save_board_info(self, n_rows, pieces):
-        self.n_rows = n_rows
+        pass
 
     def move(self, mutations, allowed_moves):
         return random.choice(allowed_moves)
