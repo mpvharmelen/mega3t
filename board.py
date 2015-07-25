@@ -254,7 +254,41 @@ class Board(object):
         return self.subtiles[coords[0]][coords[1]]
 
 
-class PygameBoard(Board, metaclass=InheritableDocstrings):
+
+class AIBoard(Board):
+    """API for AI players."""
+    def __init__(self, *args, **kwargs):
+        logger.debug('args: {}'.format(args))
+        logger.debug('kwargs: {}'.format(kwargs))
+        super(AIBoard, self).__init__(*args, **kwargs)
+        self.mutations = {piece: [] for piece in self.pieces if piece.is_AI()}
+        for ai in self.mutations:
+            ai.save_board_info(self.n_rows, self.pieces)
+
+
+    def add_mutation(self, coords, piece):
+        for ai in self.mutations:
+            self.mutations[ai].append((coords, piece))
+
+
+    def get_mutations(self, ai):
+        if ai in self.mutations:
+            out = self.mutations[ai]
+            self.mutations[ai] = []
+            return out
+        else:
+            raise ValueError("{} not in known AIs".format(ai))
+
+
+    def make_a_move(self, coords, *args, **kwargs):
+        if super(AIBoard, self).make_a_move(coords, *args, **kwargs):
+            self.add_mutation(coords, self.get_turn())
+            return True
+        return False
+
+
+
+class PygameBoard(AIBoard, metaclass=InheritableDocstrings):
     def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows):
         super(PygameBoard, self).__init__(pieces, n_rows)
 
@@ -505,31 +539,3 @@ class PygameBoard(Board, metaclass=InheritableDocstrings):
 
     def get_turn_text(self):
         return str(self.get_turn())
-
-
-
-class AIBoard(PygameBoard):
-    """API for AI players."""
-    def __init__(self, *args, **kwargs):
-        super(AIBoard, self).__init__(*args, **kwargs)
-        self.mutations = {piece: [] for piece in self.pieces if piece.is_AI()}
-        for ai in self.mutations:
-            ai.save_board_info(self.n_rows, self.pieces)
-
-    def add_mutation(self, coords, piece):
-        for ai in self.mutations:
-            self.mutations[ai].append((coords, piece))
-
-    def get_mutations(self, ai):
-        if ai in self.mutations:
-            out = self.mutations[ai]
-            self.mutations[ai] = []
-            return out
-        else:
-            raise ValueError("{} not in known AIs".format(ai))
-
-    def make_a_move(self, coords, *args, **kwargs):
-        if super(AIBoard, self).make_a_move(coords, *args, **kwargs):
-            self.add_mutation(coords, self.get_turn())
-            return True
-        return False

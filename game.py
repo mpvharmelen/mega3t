@@ -1,7 +1,7 @@
 import sys, logging, pygame
 
 import config
-from board import AIBoard as Board
+from board import PygameBoard as Board
 from constants import *
 
 logging.basicConfig(level=config.GAME_LOGGING_LEVEL)
