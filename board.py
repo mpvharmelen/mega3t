@@ -1,6 +1,8 @@
 import math, logging
 import pygame
 
+from inherit_docstring import InheritableDocstrings
+
 from pieces import Piece
 from config import BOARD_LOGGING_LEVEL
 
@@ -8,7 +10,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(BOARD_LOGGING_LEVEL)
 
 class Board(object):
-    def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows):
+    def __init__(self, pieces, n_rows):
         # Verify pieces
         self.pieces = []
         for piece in pieces:
@@ -17,53 +19,12 @@ class Board(object):
             else:
                 raise TypeError('All pieces must be an instance of '
                                 '(a subclass of) Piece.')
+        if isinstance(n_rows, int):
+            self.n_rows = n_rows
+        else:
+            raise TypeError('n_rows must be an int, got {}'.format(type(n_rows)))
 
-        # Calculate board size
-        if not tile_size % 2:
-            logger.warn('The style of the board is best with an odd tile_size.')
-
-        self.tile_size = tile_size
-        self.line_thickness = line_thickness
-        self.tile_line_size = tile_size + 2 * line_thickness
-        self.margin = margin
-        self.n_rows = n_rows
-
-        for name in ['tile_size', 'line_thickness', 'margin', 'n_rows']:
-            attr = getattr(self, name)
-            if not isinstance(attr, int):
-                raise TypeError('{} must be an int, got {}.'.format(name, attr))
-
-        self.inner_size = n_rows**2 * self.tile_line_size
-        self.outer_size = self.inner_size + margin * 2
-
-        self.style = style
         self.reset()
-
-
-    def pygame_init(self):
-        """Initialize everything to do with pygame."""
-        self.outer_surface = pygame.Surface([self.outer_size]*2)
-        self.outer_surface.fill(self.style['background-color'])
-
-        # Draw the row and column numbers.
-        font = pygame.font.Font(pygame.font.match_font(self.style['font-name']), self.style['font-size'])
-        for i in range(self.n_rows**2):
-            f = font.render(str(i), False, self.style['text-color'])
-            rect = f.get_rect()
-            rect.topleft = (
-                self.tile_line_size*(i+1)-rect.width/2-self.tile_line_size/2+self.margin,
-                self.margin/2-rect.height/2
-            )
-            self.outer_surface.blit(f, rect)
-            rect.topleft = (
-                self.margin/2-rect.width/2,
-                self.tile_line_size*(i+1)-rect.height/2-self.tile_line_size/2+self.margin
-            )
-            self.outer_surface.blit(f, rect)
-
-        self.surface = pygame.Surface([self.inner_size]*2)
-        self.highlight_surf = pygame.Surface([self.inner_size]*2, pygame.SRCALPHA)
-        self.draw_board()
 
 
     def reset(self):
@@ -71,92 +32,17 @@ class Board(object):
         self.subtiles  = [[None]*self.n_rows**2 for i in range(self.n_rows**2)]
         self.megatiles = [[None]*self.n_rows    for i in range(self.n_rows)]
 
-        self.allowed_moves = []
+        self.clear_allowed_moves()
         for x in range(self.n_rows**2):
             self.allowed_moves.extend([(x, y) for y in range(self.n_rows**2)])
 
-        self.highlights = []
         self.winning_lines = []
         self.game_over = False
         self.turn = 0
 
 
-    def draw_board(self):
-        """Draw the board to the surface, with everything on it."""
-        self.surface.fill(self.style['background-color'])
-
-        for x in range(self.n_rows**2):
-            for y in range(self.n_rows**2):
-                # First draw the tile itself, which is just some borders.
-                pos = self.coords_to_pos((x, y))
-
-                logger.debug('Board.draw_board')
-                logger.debug('{}, {}'.format('pos', pos))
-
-                rect = pygame.Rect(pos, [self.tile_line_size]*2)
-                pygame.draw.rect(
-                    self.surface,
-                    self.style['small-border-color'],
-                    rect,
-                    self.line_thickness
-                )
-
-                # Then draw a piece in it, if necessary.
-                tile = self.subtiles[x][y]
-                pos = (pos[0] + self.line_thickness, pos[1] + self.line_thickness)
-                if tile is not None:
-                    tile_surface = pygame.Surface([self.tile_size]*2)
-                    tile_surface.fill(self.style['background-color'])
-                    tile.draw(tile_surface)
-                    self.surface.blit(tile_surface, pos)
-
-        # Now draw the four "big" lines on the board.
-        for n in range(1, self.n_rows):
-            start = self.n_rows*self.tile_line_size*n - self.line_thickness
-            lines = [
-                ((start, 0), (start, self.inner_size)),
-                ((0, start), (self.inner_size, start))
-            ]
-
-            for line in lines:
-                pygame.draw.line(self.surface, self.style['big-border-color'],
-                                 line[0], line[1], self.line_thickness * 2)
-
-        for line in self.winning_lines:
-            pygame.draw.line(
-                self.highlight_surf,
-                self.style['winning-line-color'],
-                line[0],
-                line[1],
-                self.style['winning-line-thickness']
-            )
-            for end in line:
-                pygame.draw.circle(self.highlight_surf,
-                    self.style['winning-line-color'],
-                    end,
-                    self.style['winning-line-thickness'] // 2,
-                    0
-                )
-
-        self.surface.blit(self.highlight_surf, (0, 0))
-        self.outer_surface.blit(self.surface, [self.margin]*2)
-
-
-    def coords_to_pos(self, coords):
-        """Take coordinates (from 0 to n_rows ** 2 - 1) and turn them into pixel positions."""
-        logger.debug('Board.coords_to_pos')
-        logger.debug('{}, {}, {}, {}'.format('Coords', coords, type(coords), [type(x) for x in coords]))
-        x, y = coords
-        return (x)*self.tile_line_size, (y)*self.tile_line_size
-
-
-    def pos_to_coords(self, pos):
-        """Take pixel positions and turn them into coordinates (from 0 to n_rows ** 2 - 1)."""
-        x, y = pos
-        coords = (int(math.floor(x/self.tile_line_size)), int(math.floor(y/self.tile_line_size)))
-        logger.debug('Board.pos_to_coords')
-        logger.debug('{}, {}, {}, {}'.format('Coords', coords, type(coords), [type(x) for x in coords]))
-        return coords
+    def get_turn(self):
+        return self.pieces[self.turn]
 
 
     def switch_turns(self):
@@ -172,49 +58,46 @@ class Board(object):
         logger.info('Draw!')
         return True
 
-    def find_and_highlight_winner(self, last_piece, last_move):
+
+    def find_winner(self, last_piece, last_move):
         """
         Check if someone won a megatile and maybe even the whole game!
-        Also updates self.megatiles and self.highlights accordingly.
+        Also updates self.megatiles.
+
+        Didn't win:
+            obj.find_winner(last_piece, last_move) -> ()
+        Won megatile (but not game):
+            obj.find_winner(last_piece, last_move) -> ((area, line),)
+        Won game:
+            obj.find_winner(last_piece, last_move) -> ((area, line), line)
         """
         # You only have to check the last megatile someone played in,
         # because you can't win anywhere else (and otherwise we would have
         # already noticed).
 
-        has_won, area_coords, winning_line = self.check_winner_megatile(last_piece, last_move)
-        if has_won:
-            logger.info('{} won megatile {}'.format(last_piece, area_coords))
+        winning_info = self.find_winner_megatile(last_piece, last_move)
+        if winning_info is None:
+            return ()
 
-            # Didn't feel like writing a loop for this... am I lazy yet?
-            realify = lambda coords: [c + (self.n_rows * area_coords[i]) for i, c in enumerate(coords)]
-            real_line = tuple(map(realify, winning_line))
+        area_coords = winning_info[0]
+        logger.info('{} won megatile {}'.format(last_piece, area_coords))
+        self.megatiles[area_coords[0]][area_coords[1]] = last_piece
 
-            self.draw_line(real_line)
-
-            # Highlight megatile
-            for x in range(self.n_rows):
-                for y in range(self.n_rows):
-                    coords = realify([x, y])
-                    self.add_highlight(coords, last_piece.color + (self.style['winning-highlight-alpha'],))
-
-            self.megatiles[area_coords[0]][area_coords[1]] = last_piece
-            won_game, big_winning_line = self.check_has_line(last_piece, area_coords, self.megatiles)
-            if won_game:
-                logger.info('{} won the game!'.format(last_piece))
-                realify = lambda coords: [int((c + 0.5) * self.n_rows) for c in coords]
-                big_line = tuple(map(realify, big_winning_line))
-                self.draw_line(big_line)
-                # TODO: highlight big winning line
-                return True
-        return False
+        # Check for game
+        big_winning_line = self.check_has_line(last_piece, area_coords, self.megatiles)
+        if big_winning_line is not None:
+            logger.info('{} won the game!'.format(last_piece))
+            return (winning_info, big_winning_line)
+        else:
+            return (winning_info,)
 
 
-    def check_winner_megatile(self, last_piece, last_move):
+    def find_winner_megatile(self, last_piece, last_move):
         """
         Check if someone won a megatile.
 
 
-        obj.check_winner(last_move) -> (has_won, area_coords, winning_line)
+        obj.check_winner(last_move) -> (area_coords, winning_line) or None
         """
         # Coordinates of megatile in self.megatiles
         big_x = int(last_move[0] / self.n_rows)
@@ -231,19 +114,19 @@ class Board(object):
         working_grid = []
         for x in range(self.n_rows):
             working_grid.append([
-                self.subtiles[start_x + x][start_y + y]
+                self.get_tile((start_x + x, start_y + y))
                 for y in range(self.n_rows)
             ])
 
-        has_won, winning_line = self.check_has_line(last_piece, small_coords, working_grid)
-        return has_won, (big_x, big_y), winning_line
+        winning_line = self.check_has_line(last_piece, small_coords, working_grid)
+        return None if winning_line is None else ((big_x, big_y), winning_line)
 
 
     def check_has_line(self, last_piece, last_move, grid):
         """
         Check if the last move was a winning one.
 
-        obj.check_has_line(last_move, grid) -> (has_won, winning_coords)
+        obj.check_has_line(last_move, grid) -> winning_coords or None
         """
         possibilities = []
 
@@ -291,17 +174,21 @@ class Board(object):
                 for co in coords:
                     winning_coords.append([co[0] % self.n_rows, co[1] % self.n_rows])
                 break
-        return has_won, winning_coords
+        return winning_coords or None
 
 
     def make_a_move(self, coords, forced=False):
-        """Add piece of whoever's turn it is to the given coordinates."""
+        """
+        Add piece of whoever's turn it is to the given coordinates.
+
+        Returns whether the move was legal
+        """
         piece = self.get_turn()
         if self.set_tile(coords, piece, forced):
-            self.del_highlights(color=self.style['allowed-moves-color'])
-
-            if self.find_and_highlight_winner(piece, coords):
+            if len(self.find_winner(piece, coords)) > 1:
+                # Someone won the game
                 self.game_over = True
+                self.clear_allowed_moves()
                 return True
 
             self.switch_turns()
@@ -309,17 +196,17 @@ class Board(object):
 
             if self.check_for_draw():
                 self.game_over = True
-                return True
-
-            for move in self.allowed_moves:
-                self.add_highlight(move, self.style['allowed-moves-color'])
-            self.draw_highlights()
+                self.clear_allowed_moves()
             return True
         return False
 
 
-    def update_allowed_moves(self, last_move):
+    def clear_allowed_moves(self):
         self.allowed_moves = []
+
+
+    def update_allowed_moves(self, last_move):
+        self.clear_allowed_moves()
         big_x, big_y = last_move[0] % self.n_rows, last_move[1] % self.n_rows
         if self.megatiles[big_x][big_y] is None:
             # Play withing this megatile
@@ -337,6 +224,7 @@ class Board(object):
                     allowed_moves = self.get_empty_subtiles((x, y))
                     self.allowed_moves.extend(allowed_moves)
 
+
     def get_empty_subtiles(self, big_coords):
         empty = []
         start_x, start_y = big_coords[0] * self.n_rows, big_coords[1] * self.n_rows
@@ -345,7 +233,7 @@ class Board(object):
             empty.extend([
                 (start_x + x, start_y + y)
                 for y in range(self.n_rows)
-                if self.subtiles[start_x + x][start_y + y] is None
+                if self.get_tile((start_x + x, start_y + y)) is None
             ])
 
         return empty
@@ -358,10 +246,198 @@ class Board(object):
                 self.subtiles[coords[0]][coords[1]] = value
             else:
                 raise ValueError("Value should be one of the board's pieces.")
-
-            self.draw_board()
             return True
         return False
+
+
+    def get_tile(self, coords):
+        return self.subtiles[coords[0]][coords[1]]
+
+
+class PygameBoard(Board, metaclass=InheritableDocstrings):
+    def __init__(self, pieces, tile_size, line_thickness, margin, style, n_rows):
+        super(PygameBoard, self).__init__(pieces, n_rows)
+
+        # Calculate board size
+        if not tile_size % 2:
+            logger.warn('The style of the board is best with an odd tile_size.')
+
+        self.tile_size = tile_size
+        self.line_thickness = line_thickness
+        self.tile_line_size = tile_size + 2 * line_thickness
+        self.margin = margin
+
+        for name in ['tile_size', 'line_thickness', 'margin']:
+            attr = getattr(self, name)
+            if not isinstance(attr, int):
+                raise TypeError('{} must be an int, got {}.'.format(name, type(attr)))
+
+        self.inner_size = n_rows**2 * self.tile_line_size
+        self.outer_size = self.inner_size + margin * 2
+
+        self.style = style
+
+
+    def pygame_init(self):
+        """Initialize everything to do with pygame."""
+        self.outer_surface = pygame.Surface([self.outer_size]*2)
+        self.outer_surface.fill(self.style['background-color'])
+
+        # Draw the row and column numbers.
+        font = pygame.font.Font(pygame.font.match_font(self.style['font-name']), self.style['font-size'])
+        for i in range(self.n_rows**2):
+            f = font.render(str(i), False, self.style['text-color'])
+            rect = f.get_rect()
+            rect.topleft = (
+                self.tile_line_size*(i+1)-rect.width/2-self.tile_line_size/2+self.margin,
+                self.margin/2-rect.height/2
+            )
+            self.outer_surface.blit(f, rect)
+            rect.topleft = (
+                self.margin/2-rect.width/2,
+                self.tile_line_size*(i+1)-rect.height/2-self.tile_line_size/2+self.margin
+            )
+            self.outer_surface.blit(f, rect)
+
+        self.surface = pygame.Surface([self.inner_size]*2)
+        self.highlight_surf = pygame.Surface([self.inner_size]*2, pygame.SRCALPHA)
+        self.draw_board()
+
+
+    def reset(self):
+        """Reset the board to play a game from the start."""
+        super(PygameBoard, self).reset()
+        self.highlights = []
+
+
+    def draw_board(self):
+        """Draw the board to the surface, with everything on it."""
+        self.surface.fill(self.style['background-color'])
+
+        for x in range(self.n_rows**2):
+            for y in range(self.n_rows**2):
+                # First draw the tile itself, which is just some borders.
+                pos = self.coords_to_pos((x, y))
+
+                logger.debug('PygameBoard.draw_board')
+                logger.debug('{}, {}'.format('pos', pos))
+
+                rect = pygame.Rect(pos, [self.tile_line_size]*2)
+                pygame.draw.rect(
+                    self.surface,
+                    self.style['small-border-color'],
+                    rect,
+                    self.line_thickness
+                )
+
+                # Then draw a piece in it, if necessary.
+                tile = self.get_tile((x, y))
+                pos = (pos[0] + self.line_thickness, pos[1] + self.line_thickness)
+                if tile is not None:
+                    tile_surface = pygame.Surface([self.tile_size]*2)
+                    tile_surface.fill(self.style['background-color'])
+                    tile.draw(tile_surface)
+                    self.surface.blit(tile_surface, pos)
+
+        # Now draw the four "big" lines on the board.
+        for n in range(1, self.n_rows):
+            start = self.n_rows*self.tile_line_size*n - self.line_thickness
+            lines = [
+                ((start, 0), (start, self.inner_size)),
+                ((0, start), (self.inner_size, start))
+            ]
+
+            for line in lines:
+                pygame.draw.line(self.surface, self.style['big-border-color'],
+                                 line[0], line[1], self.line_thickness * 2)
+
+        for line in self.winning_lines:
+            pygame.draw.line(
+                self.highlight_surf,
+                self.style['winning-line-color'],
+                line[0],
+                line[1],
+                self.style['winning-line-thickness']
+            )
+            for end in line:
+                pygame.draw.circle(self.highlight_surf,
+                    self.style['winning-line-color'],
+                    end,
+                    self.style['winning-line-thickness'] // 2,
+                    0
+                )
+
+        self.surface.blit(self.highlight_surf, (0, 0))
+        self.outer_surface.blit(self.surface, [self.margin]*2)
+
+
+    def coords_to_pos(self, coords):
+        """
+        Take coordinates (from 0 to n_rows ** 2 - 1) and turn them into pixel positions.
+        """
+        logger.debug('PygameBoard.coords_to_pos')
+        logger.debug('{}, {}, {}, {}'.format('Coords', coords, type(coords), [type(x) for x in coords]))
+        x, y = coords
+        return (x)*self.tile_line_size, (y)*self.tile_line_size
+
+
+    def pos_to_coords(self, pos):
+        """Take pixel positions and turn them into coordinates (from 0 to n_rows ** 2 - 1)."""
+        x, y = pos
+        coords = (int(math.floor(x/self.tile_line_size)), int(math.floor(y/self.tile_line_size)))
+        logger.debug('PygameBoard.pos_to_coords')
+        logger.debug('{}, {}, {}, {}'.format('Coords', coords, type(coords), [type(x) for x in coords]))
+        return coords
+
+
+    def find_winner(self, last_piece, last_move):
+        """
+        Check if someone won a megatile and maybe even the whole game!
+        Also updates self.megatiles and self.highlights accordingly.
+        """
+        lines = super(PygameBoard, self).find_winner(last_piece, last_move)
+        if lines:
+            area_coords = lines[0][0]
+            winning_line = lines[0][1]
+            # Didn't feel like writing a loop for this... am I lazy yet?
+            realify = lambda coords: [c + (self.n_rows * area_coords[i]) for i, c in enumerate(coords)]
+            real_line = tuple(map(realify, winning_line))
+
+            self.draw_line(real_line)
+
+            # Highlight megatile
+            for x in range(self.n_rows):
+                for y in range(self.n_rows):
+                    coords = realify([x, y])
+                    self.add_highlight(coords, last_piece.color + (self.style['winning-highlight-alpha'],))
+
+            if len(lines) > 1:
+                realify = lambda coords: [int((c + 0.5) * self.n_rows) for c in coords]
+                big_line = tuple(map(realify, lines[1]))
+                self.draw_line(big_line)
+        return lines
+
+
+    @copy_ancestor_docstring
+    def make_a_move(self, coords, forced=False):
+        legal = super(PygameBoard, self).make_a_move(coords, forced)
+        self.draw_highlights() # and board
+        return legal
+
+
+    @copy_ancestor_docstring
+    def clear_allowed_moves(self):
+        super(PygameBoard, self).clear_allowed_moves()
+        if getattr(self, 'highlights', False):
+            self.del_highlights(color=self.style['allowed-moves-color'])
+
+
+    @copy_ancestor_docstring
+    def update_allowed_moves(self, last_move):
+        super(PygameBoard, self).update_allowed_moves(last_move)
+        for move in self.allowed_moves:
+            self.add_highlight(move, self.style['allowed-moves-color'])
+
 
     def draw_line(self, line):
         """Draw a line from line[0] to line[-1]."""
@@ -376,6 +452,7 @@ class Board(object):
         line = [start, end]
         self.winning_lines.append(line)
 
+
     def draw_highlights(self):
         """Draw the highlights to the surface."""
         # We're gonna need to recreate the surface, otherwise old highlights
@@ -386,7 +463,6 @@ class Board(object):
             x, y = map(lambda i: i + self.line_thickness, self.coords_to_pos(coords))
             rect = pygame.Rect((x, y), (self.tile_size,)*2)
             pygame.draw.rect(self.highlight_surf, color, rect, 0)
-
         self.draw_board()
 
 
@@ -427,13 +503,12 @@ class Board(object):
         return False
 
 
-    def get_turn(self):
-        return self.pieces[self.turn]
-
     def get_turn_text(self):
         return str(self.get_turn())
 
-class AIBoard(Board):
+
+
+class AIBoard(PygameBoard):
     """API for AI players."""
     def __init__(self, *args, **kwargs):
         super(AIBoard, self).__init__(*args, **kwargs)
@@ -458,5 +533,3 @@ class AIBoard(Board):
             self.add_mutation(coords, self.get_turn())
             return True
         return False
-
-
