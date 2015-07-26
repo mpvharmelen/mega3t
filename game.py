@@ -198,6 +198,7 @@ if __name__ == '__main__':
                 pos = b.pos_in_board(event.pos)
                 if pos:
                     if b.make_a_move(b.pos_to_coords(pos), force_move):
+                        b.del_highlights(color=BOARD_STYLE['highlight-color'])
                         turn_rect = draw_turn(window, font,
                                               b.get_turn_text(), rect=turn_rect)
 
