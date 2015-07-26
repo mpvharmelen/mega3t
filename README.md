@@ -153,7 +153,7 @@ against a self made opponent.
 
 ### Todo
 
-* Highlight last move
+* Mouse highlight is only removed after click when the mouse is moved
 
 ### Dependencies
 

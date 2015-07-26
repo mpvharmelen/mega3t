@@ -454,7 +454,10 @@ class PygameBoard(AIBoard, metaclass=InheritableDocstrings):
     @copy_ancestor_docstring
     def make_a_move(self, coords, forced=False):
         legal = super(PygameBoard, self).make_a_move(coords, forced)
-        self.draw_highlights() # and board
+        if legal:
+            self.del_highlights(color=self.style['last-move-color'])
+            self.add_highlight(coords, self.style['last-move-color'])
+            self.draw_highlights()
         return legal
 
 

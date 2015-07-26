@@ -32,13 +32,14 @@ FORCE_KEY = K_f
 
 BOARD_STYLE = {
     'background-color'       :  BACKGROUND_COLOR,
-    'small-border-color'     :  (0, 0, 0),
-    'big-border-color'       :  (255, 0, 0),
+    'small-border-color'     :  Color(0, 0, 0),
+    'big-border-color'       :  Color(255, 0, 0),
     'highlight-color'        :  Color(0, 0, 0, 32),
     'winning-line-color'     :  Color(0, 0, 0, 150),
     'winning-line-thickness' :  10,
     'winning-highlight-alpha':  100,
     'allowed-moves-color'    :  Color(0, 255, 0, 90),
+    'last-move-color'        :  Color(0, 0, 0, 33),
     'font-name'              :  FONT,
     'font-size'              :  FONT_SIZE,
     'text-color'             :  TEXT_COLOR
