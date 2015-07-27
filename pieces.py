@@ -177,6 +177,9 @@ class CountingAI(AIMixin):
       X  |     |
     1   0|1   1|0   1
 
+    This will result in (10!) ** 9 * 3 ** 9 =about 10 ** 63 possibilities,
+    which renders it quite impossible to use.
+
 
     Learning
     ========
