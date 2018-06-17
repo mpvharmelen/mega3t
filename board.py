@@ -18,7 +18,8 @@ class Board(object):
                 self.pieces.append(piece)
             else:
                 raise TypeError('All pieces must be an instance of '
-                                '(a subclass of) Piece.')
+                                '(a subclass of) Piece. Got: {!r}'.format(
+                                    piece))
         if isinstance(n_rows, int):
             self.n_rows = n_rows
         else:
