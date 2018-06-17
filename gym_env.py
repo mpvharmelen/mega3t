@@ -23,8 +23,8 @@ class Mega3TEnv(Env):
         self.n_rows = n_rows
         self.reset()
 
-        # action        (mega x, mega y, small x, small y)
-        self.action_space = spaces.MultiDiscrete([n_rows] * 4)
+        # action        (mega x * mega y * small x * small y)
+        self.action_space = spaces.Discrete(n_rows ** 4)
 
         # observation   (player, ) * (n_rows ** 2) ** 2
         # self.observation_space = spaces.MultiDiscrete(
@@ -64,7 +64,13 @@ class Mega3TEnv(Env):
         return opp, last_move
 
     def action_to_coords(self, action):
-        mega_x, mega_y, tiny_x, tiny_y = action
+        mega_x = action // self.n_rows ** 3
+        action = action - mega_x * self.n_rows ** 3
+        mega_y = action // self.n_rows ** 2
+        action = action - mega_y * self.n_rows ** 2
+        tiny_x = action // self.n_rows
+        action = action - tiny_x * self.n_rows
+        tiny_y = action % self.n_rows
         return (
             mega_x * self.n_rows + tiny_x,
             mega_y * self.n_rows + tiny_y
@@ -175,6 +181,23 @@ if __name__ == '__main__':
     env = Mega3TEnv()
     print(env.reset())
     # Legal move
-    print(env.step((0, 0, 0, 0)))
+    print(env.step(0))
     # Illegal move
-    print(env.step((0, 0, 0, 0)))
+    print(env.step(0))
+
+    # Legal move (bottom right)
+    env.reset()
+    print(env.step(env.n_rows ** 4 - 1))
+
+    # Legal move (second from the left)
+    env.reset()
+    print(env.step(1))
+
+    # Legal move (middle)
+    env.reset()
+    print(env.step(env.n_rows ** 4 // 2))
+
+    # Legal move (everywhere)
+    for i in range(env.n_rows ** 4):
+        env.reset()
+        print(env.step(i))
