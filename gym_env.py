@@ -38,7 +38,7 @@ class Mega3TEnv(Env):
             shape=(n_rows ** 4, ),
             dtype='int32',
         )
-        self.reward_range = (-1.0, 1.0)
+        self.reward_range = (-4.0, 10.0)
 
     def reset(self):
         self.board = AIBoard([self.piece] + self.opponents, self.n_rows)
@@ -75,12 +75,12 @@ class Mega3TEnv(Env):
 
     def step(self, action):
         reward = 0.0
-        WIN_REWARD = 1.0
+        WIN_REWARD = 10.0
         LOSE_REWARD = -1.0
-        ILLEGAL_REWARD = LOSE_REWARD
-        DRAW_REWARD = 0.0
-        WIN_MEGA_TILE_REWARD = 0.1
-        LOSE_MEGA_TILE_REWARD = -0.05
+        ILLEGAL_REWARD = -4.0
+        DRAW_REWARD = 0.5
+        WIN_MEGA_TILE_REWARD = 1.0
+        LOSE_MEGA_TILE_REWARD = -0.5
 
         coords = self.action_to_coords(action)
         tiles_free = self.board.megatiles.count(None)
