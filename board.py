@@ -260,11 +260,16 @@ class AIBoard(Board):
     def __init__(self, *args, **kwargs):
         logger.debug('args: {}'.format(args))
         logger.debug('kwargs: {}'.format(kwargs))
+        self.mutations = {}
         super(AIBoard, self).__init__(*args, **kwargs)
         self.mutations = {piece: [] for piece in self.pieces if piece.is_AI()}
+        self.reset()
+
+    def reset(self):
+        """Reset the board"""
+        super(AIBoard, self).reset()
         for ai in self.mutations:
             ai.save_board_info(self.n_rows, self.pieces)
-
 
     def add_mutation(self, coords, piece):
         for ai in self.mutations:
