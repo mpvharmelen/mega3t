@@ -35,7 +35,7 @@ class Mega3TEnv(Env):
         self.observation_space = spaces.Box(
             low=0,
             high=len(opponents) + 2,
-            shape=(n_rows, ) * 4
+            shape=(n_rows ** 4, )
         )
         self.reward_range = (-1.0, 1.0)
 
