@@ -31,16 +31,11 @@ class Mega3TEnv(Env):
         #     [len(opponents) + 2] * (n_rows ** 2) ** 2
         # )
 
-        # observation   ((((player, ) * n_rows) * n_rows) * n_rows) * n_rows
-        self.observation_space = spaces.Tuple(
-            spaces.Tuple(
-                spaces.Tuple(
-                    spaces.MultiDiscrete([len(opponents) + 2] * n_rows)
-                    for _ in range(n_rows)
-                )
-                for _ in range(n_rows)
-            )
-            for _ in range(n_rows)
+        # observation   (player, ) * (n_rows ** 2) ** 2
+        self.observation_space = spaces.Box(
+            low=0,
+            high=len(opponents) + 2,
+            shape=(n_rows, ) * 4
         )
 
     def reset(self):
