@@ -281,8 +281,9 @@ class AIBoard(Board):
 
 
     def make_a_move(self, coords, *args, **kwargs):
+        player = self.get_turn()
         if super(AIBoard, self).make_a_move(coords, *args, **kwargs):
-            self.add_mutation(coords, self.get_turn())
+            self.add_mutation(coords, player)
             return True
         return False
 
