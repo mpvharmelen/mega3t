@@ -27,21 +27,10 @@ class Mega3TEnv(Env):
         self.action_space = spaces.Discrete(n_rows ** 4)
 
         # observation   (player, ) * (n_rows ** 2) ** 2
-        # self.observation_space = spaces.MultiDiscrete(
-        #     [len(opponents) + 2] * (n_rows ** 2) ** 2
-        # )
-
-        # observation   ((((player, ) * n_rows) * n_rows) * n_rows) * n_rows
-        self.observation_space = spaces.Tuple(
-            spaces.Tuple(
-                spaces.Tuple(
-                    spaces.MultiDiscrete([len(opponents) + 2] * n_rows)
-                    for _ in range(n_rows)
-                )
-                for _ in range(n_rows)
-            )
-            for _ in range(n_rows)
+        self.observation_space = spaces.Discrete(
+            (len(opponents) + 2) ** (n_rows ** 4)
         )
+        self.reward_range = (-1.0, 1.0)
 
     def reset(self):
         self.board = AIBoard([self.piece] + self.opponents, self.n_rows)
@@ -149,25 +138,11 @@ class Mega3TEnv(Env):
         """
         Convert the board to an observation
         """
-        mega_block = []
-        for mega_x in range(self.n_rows):
-            mega_row = []
-            mega_block.append(mega_row)
-            for mega_y in range(self.n_rows):
-                tiny_block = []
-                mega_row.append(tiny_block)
-                for tiny_x in range(self.n_rows):
-                    x = mega_x * self.n_rows + tiny_x
-                    tiny_row = []
-                    tiny_block.append(tiny_row)
-                    for tiny_y in range(self.n_rows):
-                        y = mega_y * self.n_rows + tiny_y
-                        tiny_row.append(
-                            self.board_value_to_int(
-                                self.board.get_tile((x, y))
-                            )
-                        )
-        return mega_block
+        return [
+            self.board_value_to_int(v)
+            for column in self.board.subtiles
+            for v in column
+        ]
 
     def board_value_to_int(self, value):
         if value is None:
